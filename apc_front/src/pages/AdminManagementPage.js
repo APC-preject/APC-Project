@@ -1,3 +1,4 @@
+// 뒤에 admin/management 붙이면 됨
 import React ,{ useState, useCallback, useEffect } from 'react'
 import { useNavigate } from "react-router-dom"
 import BasicLayout from '../layout/BasicLayout'
