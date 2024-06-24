@@ -1,3 +1,4 @@
+// 로그인한 유저 정보 관리
 import { create } from 'zustand';
 
 
