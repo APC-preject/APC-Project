@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
-import { databaseRef, get, getDatabase } from '../../firebase/FirebaseInstance';
+import axios from 'axios';
 import { useUserStore } from '../../store/UserStore';
 
 const QuestionDetailPage = () => {
@@ -9,34 +9,25 @@ const QuestionDetailPage = () => {
   const [queryParams] = useSearchParams();
   const questionId = queryParams.get('id');
   const [question, setQuestion] = useState({});
-  const database = getDatabase();
-  const {role} = useUserStore()
+  const { role } = useUserStore();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const questionsRef = databaseRef(database, `questions/${questionId}`);
-        const snapshot = await get(questionsRef);
-
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          setQuestion(data);
-        } else {
-          alert('문의 id에 해당하는 데이터를 가져올 수 없습니다.');
-        }
+        const response = await axios.get(`http://localhost:4001/questions/${questionId}`);
+        setQuestion(response.data);
       } catch (error) {
-        alert('문의 리스트를 불러오던중 문제가 생겼습니다.' + error.message);
+        alert('문의 데이터를 가져오는 중 문제가 발생했습니다.' + error.message);
       }
     };
 
     fetchData();
-  }, [database, questionId]);
+  }, [questionId]);
 
-  // 뒤로 가기 버튼 클릭 핸들러
   const handleGoBack = () => {
     navigate(-1);
   };
 
-  // 답변 달기 버튼 클릭 핸들러
   const handleAddResponse = () => {
     navigate(`/customer/question/response?id=${questionId}`);
   };
@@ -58,8 +49,8 @@ const QuestionDetailPage = () => {
               <span className="text-sm text-sub">문의유저: {question.userID}</span>
             </div>
           </div>
-          <div className="border border-bor rounded-lg  text-sub p-6 bg-textbgHov">
-          <h2 className="text-l font-bold mb-2">문의 내용</h2>
+          <div className="border border-bor rounded-lg text-sub p-6 bg-textbgHov">
+            <h2 className="text-l font-bold mb-2">문의 내용</h2>
             <p className="text-sub leading-7">{question.content}</p>
           </div>
           {question.response && (

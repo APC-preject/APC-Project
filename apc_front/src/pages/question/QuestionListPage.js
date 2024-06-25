@@ -2,64 +2,48 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactPaginate from 'react-paginate';
 import BasicLayout from '../../layout/BasicLayout';
-import { getDatabase, databaseRef, get } from '../../firebase/FirebaseInstance';
+import axios from 'axios';
 import { useUserStore } from '../../store/UserStore';
 
 const QuestionListPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const questionsPerPage = 10;
   const navigate = useNavigate();
-  const [questionList, setQuestionList] = useState([{}]);
-  const database = getDatabase();
-  const { id } = useUserStore;
+  const [questionList, setQuestionList] = useState([]);
+  const { id } = useUserStore();
   const [selectedQuestionType, setSelectedQuestionType] = useState('전체');
 
-  // 문의 유형 옵션 배열 (전체 옵션 포함)
-  const questionTypes = ['전체','상품 문의', '배송 문의', '환불 문의', '기타 문의'];
+  const questionTypes = ['전체', '상품 문의', '배송 문의', '환불 문의', '기타 문의'];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const questionsRef = databaseRef(database, 'questions');
-        const snapshot = await get(questionsRef);
+        const response = await axios.get(`http://localhost:4001/questions`);
+        const data = response.data;
+        const questions = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
+        questions.sort((a, b) => b.registerTime - a.registerTime);
 
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          
-          const questions = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
-          questions.sort((a, b) => b.registerTime - a.registerTime);
+        const modifiedQuestions = questions.map(question => ({
+          ...question,
+          content: question.content.length > 5 ? question.content.slice(0, 10) + '...' : question.content
+        }));
 
-          // 문의 내용  10자 이상이면 자르기
-          const modifiedQuestions = questions.map(question => ({
-            ...question,
-            content: question.content.length > 5 ? question.content.slice(0, 10) + '...' : question.content
-          }));
-
-          setQuestionList(modifiedQuestions);
-        }
+        setQuestionList(modifiedQuestions);
       } catch (error) {
-        alert('문의 리스트를 불러오던중 문제가 생겼습니다.' + error.message)
+        alert('문의 리스트를 불러오던 중 문제가 생겼습니다.' + error.message);
       }
     };
 
     fetchData();
   }, []);
 
-  // 문의 유형 선택에 따라 필터링된 문의 리스트
-  const filteredQuestions =
-    selectedQuestionType === '전체'  //전체가 아닌 경우 필터링
-      ? questionList
-      : questionList.filter(
-          (question) => question.questionType === selectedQuestionType
-        );
+  const filteredQuestions = selectedQuestionType === '전체'
+    ? questionList
+    : questionList.filter((question) => question.questionType === selectedQuestionType);
 
-  // 현재 페이지의 문의 목록 계산
   const indexOfLastQuestion = (currentPage + 1) * questionsPerPage;
   const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
-  const currentQuestions = filteredQuestions.slice(
-    indexOfFirstQuestion,
-    indexOfLastQuestion
-  );
+  const currentQuestions = filteredQuestions.slice(indexOfFirstQuestion, indexOfLastQuestion);
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
@@ -72,7 +56,7 @@ const QuestionListPage = () => {
   return (
     <BasicLayout>
       <div className="container mx-auto py-20 px-4">
-        <h1 className="text-2xl font-bold mb-6 border-b  text-sub">전체 문의 리스트</h1>
+        <h1 className="text-2xl font-bold mb-6 border-b text-sub">전체 문의 리스트</h1>
         <div className="mb-4">
           <label htmlFor="questionType" className="mr-2 text-sub">
             문의 유형:

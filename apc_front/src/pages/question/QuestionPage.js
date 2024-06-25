@@ -1,4 +1,3 @@
-// customer/question
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons';
@@ -6,16 +5,16 @@ import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
 import { useNavigate } from 'react-router-dom';
-import { databaseRef, getDatabase, child, update, push} from '../../firebase/FirebaseInstance';
+import axios from 'axios';
+
 const QuestionPage = () => {
-  const { user } = useAuthStore()
-  const { id, replaceId } = useUserStore()
+  const { user } = useAuthStore();
+  const { id, replaceId } = useUserStore();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [questionType, setQuestionType] = useState('');
   const [content, setContent] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const database = getDatabase();
 
   const handleTitleChange = (e) => {
     setTitle(e.target.value);
@@ -25,22 +24,19 @@ const QuestionPage = () => {
     setContent(e.target.value);
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // 입력 여부 검사
     if (title === '') {
-      alert('제목을 입력해 주세요.')
-      return
+      alert('제목을 입력해 주세요.');
+      return;
     } else if (questionType === '') {
-      alert('문의 유형을 선택해 주세요')
-      return
+      alert('문의 유형을 선택해 주세요');
+      return;
     } else if (content === '') {
-      alert('문의 내용을 입력 해 주세요')
-      return
+      alert('문의 내용을 입력해 주세요');
+      return;
     }
-    // 고객 문의 등록
-    try{
+    try {
       const questionDate = new Date().toLocaleString();
       const questionData = {
         userID: replaceId(id),
@@ -49,20 +45,13 @@ const QuestionPage = () => {
         content,
         questionDate
       };
-      
-      const questionId = push(child(databaseRef(database), 'questions')).key
-      const questionUpdates = {}
-      questionUpdates[`questions/${questionId}`] = questionData
-      questionUpdates[`userQuestions/${id}/${questionId}`] = questionData
-      update(databaseRef(database),questionUpdates)
-      alert('문의가 등록되었습니다.')
+      await axios.post('http://localhost:4001/questions', { userId: id, questionData });
+      alert('문의가 등록되었습니다.');
       navigate('/customer/question/list');
-    
     } catch (error) {
-      alert('문의를 등록하는데 에러가 발생했습니다' + error.message)
-      navigate('/customer/question/list'); 
+      alert('문의를 등록하는데 에러가 발생했습니다' + error.message);
+      navigate('/customer/question/list');
     }
-
   };
 
   const toggleDropdown = () => {
@@ -70,14 +59,11 @@ const QuestionPage = () => {
   };
 
   if (!user || id == null) {
-    return(
+    return (
       <BasicLayout>
-        <p className='pt-20 text-3xl text-baritem'>
-          로그인 후 이용하십시오.
-        </p>
-
+        <p className="pt-20 text-3xl text-baritem">로그인 후 이용하십시오.</p>
       </BasicLayout>
-    )
+    );
   }
 
   return (
@@ -113,7 +99,8 @@ const QuestionPage = () => {
                 </div>
                 {dropdownOpen && (
                   <div
-                   className="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-textbg border border-bor ring-black ring-opacity-5">
+                    className="origin-top-right absolute right-0 mt-2 w-full rounded-md shadow-lg bg-textbg border border-bor ring-black ring-opacity-5"
+                  >
                     <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                       <button
                         onClick={() => {
