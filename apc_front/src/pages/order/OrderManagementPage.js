@@ -9,7 +9,6 @@ const OrderManagementPage = () => {
   const [orders, setOrders] = useState([]);
   const { id, role, replaceId } = useUserStore();
   const { user } = useAuthStore();
-  const database = getDatabase();
   const navigate = useNavigate();
 
   function replace(userId) {
@@ -18,17 +17,27 @@ const OrderManagementPage = () => {
 
   // 배송 대기 목록 조회 함수
   async function getDeliveryWaits(providerId) {
-    const deliveryWaitsRef = databaseRef(database, `deliveryWaits/${providerId}`);
-    const snapshot = await get(deliveryWaitsRef);
-    return snapshot;
+    try {
+      const response = await fetch(`http://localhost:4000/deliveryWaits/${providerId}`);
+      if (!response.ok) {
+        throw new Error('Network response error!');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching order info:', error);
+      return null;
+    }
+    // const deliveryWaitsRef = databaseRef(database, `deliveryWaits/${providerId}`);
+    // const snapshot = await get(deliveryWaitsRef);
+    // return snapshot;
   }
 
   useEffect(() => {
     const fetchDeliveryWaitData = async () => {
       try {
-        const snapshot = await getDeliveryWaits(id);
-        if (snapshot.exists()) {
-          const ordersData = snapshot.val();
+        const ordersData = await getDeliveryWaits(id);
+        if (ordersData) {
           setOrders(ordersData)
         } else {
           alert('Id에 해당하는 상품이 존재하지 않습니다.');
@@ -36,6 +45,17 @@ const OrderManagementPage = () => {
       } catch (error) {
         alert('상품 상세정보를 가져오는 도중 문제가 발생했습니다.: ' + error.message);
       }
+      // try {
+      //   const snapshot = await getDeliveryWaits(id);
+      //   if (snapshot.exists()) {
+      //     const ordersData = snapshot.val();
+      //     setOrders(ordersData)
+      //   } else {
+      //     alert('Id에 해당하는 상품이 존재하지 않습니다.');
+      //   }
+      // } catch (error) {
+      //   alert('상품 상세정보를 가져오는 도중 문제가 발생했습니다.: ' + error.message);
+      // }
     };
     fetchDeliveryWaitData();
   }, [id]);

@@ -8,6 +8,7 @@ import adminKey from './unity-apc-firebase-adminsdk.json';
 const app = admin.initializeApp({
     databaseURL: 'https://unity-apc-default-rtdb.firebaseio.com',
     credential: admin.credential.cert(adminKey),
+    storageBucket: 'unity-apc.appspot.com'
 });
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
