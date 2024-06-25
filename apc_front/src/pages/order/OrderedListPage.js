@@ -13,17 +13,27 @@ const OrderedListPage = () => {
   const navigate = useNavigate();
 
   async function getOrderInfo(id) {
-    const ordersRef = databaseRef(database, `orders/${id}`);
-    const snapshot = await get(ordersRef);
-    return snapshot;
+    try {
+      const response = await fetch(`http://localhost:4000/orders/${id}`);
+      if (!response.ok) {
+        throw new Error('Network response error!');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching order info:', error);
+      throw error;
+    }
+    // const ordersRef = databaseRef(database, `orders/${id}`);
+    // const snapshot = await get(ordersRef);
+    // return snapshot;
   }
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const snapshot = await getOrderInfo(id);
-        if (snapshot.exists()) {
-          const data = snapshot.val();
+        const data = await getOrderInfo(id);
+        if (data) {
           const ordersArray = Object.entries(data).map(([key, value]) => ({
             id: key,
             ...value,
