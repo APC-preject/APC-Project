@@ -39,7 +39,8 @@ const OrderManagementDetailPage = () => {
         method: 'POST',
         body: JSON.stringify({ 
           trackingNumber: trackingNumber,
-          productId: orderInfo.productId
+          productId: orderInfo.productId,
+          userId: userId
         }),
         headers: {
           'Content-Type': 'application/json'
@@ -81,7 +82,8 @@ const OrderManagementDetailPage = () => {
       const response = await fetch(`http://localhost:4000/ordersArrive/${id}/${orderId}`, {
         method: 'POST',
         body: JSON.stringify({
-          productId: orderInfo.productId
+          productId: orderInfo.productId,
+          userId: userId
         }),
         headers: {
           'Content-Type': 'application/json'
