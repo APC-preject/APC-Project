@@ -2,45 +2,38 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ReactPaginate from 'react-paginate';
 import BasicLayout from '../../layout/BasicLayout';
-import { getDatabase, databaseRef, get} from '../../firebase/FirebaseInstance';
+import axios from 'axios';
 import { useUserStore } from '../../store/UserStore';
 
 const MyQuestionListPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const questionsPerPage = 10;
   const navigate = useNavigate();
-  const [questionList, setQuestionList] = useState([{}]) ;
-  const database = getDatabase();
+  const [questionList, setQuestionList] = useState([]);
   const { id, replaceId } = useUserStore();
 
   useEffect(() => {
     const fetchData = async () => {
-      try{
-        const questionsRef = databaseRef(database, `userQuestions/${id}`);
-        const snapshot = await get(questionsRef);
+      try {
+        const response = await axios.get(`http://localhost:4001/userQuestions/${id}`);
+        const data = response.data;
+        const questions = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
+        questions.sort((a, b) => b.registerTime - a.registerTime);
 
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const questions = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
-          questions.sort((a, b) => b.registerTime - a.registerTime);
-          // 문의 내용  10자 이상이면 자르기
-          const modifiedQuestions = questions.map(question => ({
-            ...question,
-            content: question.content.length > 5 ? question.content.slice(0, 10) + '...' : question.content
-          }));
-  
-          setQuestionList(modifiedQuestions);
-        }
-      } catch (error){
-          alert('문의 리스트를 불러오던중 문제가 생겼습니다.' +error.message)
-      } 
-      
+        const modifiedQuestions = questions.map(question => ({
+          ...question,
+          content: question.content.length > 5 ? question.content.slice(0, 10) + '...' : question.content
+        }));
+
+        setQuestionList(modifiedQuestions);
+      } catch (error) {
+        alert('문의 리스트를 불러오던 중 문제가 생겼습니다.' + error.message);
+      }
     };
 
     fetchData();
-  }, []); 
+  }, [id]);
 
-  // 현재 페이지의 문의 목록 계산
   const indexOfLastQuestion = (currentPage + 1) * questionsPerPage;
   const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
   const currentQuestions = questionList.slice(indexOfFirstQuestion, indexOfLastQuestion);
@@ -56,7 +49,7 @@ const MyQuestionListPage = () => {
   return (
     <BasicLayout>
       <div className="container mx-auto py-20 px-4">
-        <h1 className="text-2xl font-bold mb-6 border-b  text-sub">{replaceId(id)} 님의 문의 리스트</h1>
+        <h1 className="text-2xl font-bold mb-6 border-b text-sub">{replaceId(id)} 님의 문의 리스트</h1>
         <table className="w-full">
           <thead>
             <tr className="bg-baritem">
