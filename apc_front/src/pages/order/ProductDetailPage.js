@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import BasicLayout from '../../layout/BasicLayout';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { get, databaseRef, getDatabase, push, update } from '../../firebase/FirebaseInstance';
+import { get, ref as databaseRef, getDatabase, push, runTransaction, update } from 'firebase/database';
 import { useUserStore } from '../../store/UserStore';
 import { useAuthStore } from '../../store/AuthStore';
 import MessageModal from '../../modal/MessageModal';
@@ -49,18 +49,6 @@ const ProductDetailPage = () => {
     const productsRef = databaseRef(database, `products/${productId}`);
     const snapshot = await get(productsRef);
     return snapshot;
-  }
-
-  // 주문 시 수량 업데이트 함수
-  async function updateQuantity(productId, quantity) {
-    const updateRef = databaseRef(database, `/products/${productId}/pQuantity`);
-    const snapshot = await get(updateRef);
-    if (snapshot) {
-      const data = snapshot.val();
-      const updateData = {};
-      updateData[`products/${productId}/pQuantity`] = parseInt(data) - parseInt(quantity);
-      await update(databaseRef(database), updateData);
-    }
   }
 
   // 제품 리뷰 목록 조회 함수
@@ -147,7 +135,18 @@ const ProductDetailPage = () => {
 
     // 수량 업데이트 및 검사로직
     try {
-      await updateQuantity(productId, quantity);
+      const productRef = databaseRef(database, `products/${productId}`);
+
+      await runTransaction(productRef, (product) => {
+        if (product) {
+          if (product.pQuantity >= quantity) {
+            product.pQuantity -= quantity;
+          } else {
+            throw new Error('주문 수량이 재고 수량보다 많습니다.');
+          }
+        }
+        return product;
+      });
 
       try {
         // 새로운 주문 정보
@@ -189,7 +188,12 @@ const ProductDetailPage = () => {
       } catch (error) {
         alert('주문 데이터 저장 중 문제가 발생했습니다.', error);
         // 주문 데이터 저장 중 문제 생겼으니 뺏던 수량 원상 복구
-        updateQuantity(productId, -quantity);
+        await runTransaction(productRef, (product) => {
+          if (product) {
+            product.pQuantity += quantity;
+          }
+          return product;
+        });
         return;
       }
     } catch (error) {
@@ -197,7 +201,6 @@ const ProductDetailPage = () => {
       return;
     }
   };
-
 
   //Todo: 실제 상품이 존재하지 않는 경우가 아니라 database에서 로드되는 도중에도 이부분이 잠시 나타남. 이에 대한 처리 필요
   if (!product) {
