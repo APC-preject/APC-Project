@@ -100,6 +100,23 @@ app.get('/deliveryWaits/:providerId', async (req, res) => {
   }
 });
 
+app.get('/products', async (req, res) => {
+  const deliveryRef = db.ref(`products`);
+  try {
+    const snapshot = await deliveryRef.get();
+    if (snapshot.exists()) {
+      res.status(200).json(snapshot.val());
+    } else {
+      res.status(404).json({ message: 'Order not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching deliveryWaits', error });
+  }
+});
+
+
+
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
