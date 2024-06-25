@@ -31,10 +31,10 @@ app.get('/orders/:id', async (req, res) => {
 });
 
 app.get('/orders/:id/:orderid', async (req, res) => {
-  const { id } = req.params;
+  const { id, orderid } = req.params;
   const orderRef = db.ref(`orders/${id}/${orderid}`);
   try {
-    const snapshot = await get(orderRef);
+    const snapshot = await orderRef.get(orderRef);
     if (snapshot.exists()) {
       res.status(200).json(snapshot.val());
     } else {
@@ -45,9 +45,9 @@ app.get('/orders/:id/:orderid', async (req, res) => {
   }
 });
 
-app.post('ordersGo/:id/:orderid', async (req, res) => {
+app.post('/ordersGo/:id/:orderid', async (req, res) => {
   const { id, orderid } = req.params;
-  const { trackingNumber, productId } = req.body;
+  const { trackingNumber, productId, userId } = req.body;
   const orderRef = db.ref();
   try {
     if (trackingNumber === '') {
@@ -56,26 +56,27 @@ app.post('ordersGo/:id/:orderid', async (req, res) => {
     }
     const departedDate = new Date().toLocaleString();
     const updates = {}
-    updates[`orders/${id}/${orderid}/departedDate`] = departedDate
-    updates[`orders/${id}/${orderid}/deliveryStatus`] = 1
+    updates[`orders/${userId}/${orderid}/departedDate`] = departedDate
+    updates[`orders/${userId}/${orderid}/deliveryStatus`] = 1
     updates[`deliveryWaits/${id}/${productId}/${orderid}/deliveryStatus`] = 1 // id 와 userId 동일한 값인지 확인
-    updates[`orders/${id}/${orderid}/trackingNum`] = trackingNumber
+    updates[`orders/${userId}/${orderid}/trackingNum`] = trackingNumber
     await orderRef.update(updates);
     res.status(200).json({ message: 'Departed' });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: 'Error updating order', error });
   }
 });
 
-app.post('ordersArrive/:id/:orderid', async (req, res) => {
+app.post('/ordersArrive/:id/:orderid', async (req, res) => {
   const { id, orderid } = req.params;
-  const { productId } = req.body;
+  const { productId, userId } = req.body;
   const orderRef = db.ref();
   try {
     const arrivedDate = new Date().toLocaleString();
     const updates = {}
-    updates[`orders/${id}/${orderid}/arrivedDate`] = arrivedDate
-    updates[`orders/${id}/${orderid}/deliveryStatus`] = 2
+    updates[`orders/${userId}/${orderid}/arrivedDate`] = arrivedDate
+    updates[`orders/${userId}/${orderid}/deliveryStatus`] = 2
     updates[`deliveryWaits/${id}/${productId}/${orderid}`] = null
     await orderRef.update(updates);
     res.status(200).json({ message: 'Departed' });
