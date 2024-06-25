@@ -9,7 +9,6 @@ const OrderedListPage = () => {
   const { user } = useAuthStore();
   const { id, replaceId } = useUserStore();
   const [orders, setOrders] = useState([]);
-  const database = getDatabase();
   const navigate = useNavigate();
 
   async function getOrderInfo(id) {
@@ -22,7 +21,7 @@ const OrderedListPage = () => {
       return data;
     } catch (error) {
       console.error('Error fetching order info:', error);
-      throw error;
+      return null;
     }
     // const ordersRef = databaseRef(database, `orders/${id}`);
     // const snapshot = await get(ordersRef);
@@ -39,7 +38,6 @@ const OrderedListPage = () => {
             ...value,
           }));
           setOrders(ordersArray);
-          console.log(orders);
         } else {
           setOrders([]);
         }
