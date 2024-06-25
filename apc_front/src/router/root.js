@@ -37,12 +37,6 @@ const QuestionDetailPage = lazy(() => import("../pages/question/QuestionDetailPa
 const QuestionResponsePage = lazy(() => import("../pages/question/QuestionResponsePage"))
 const MyQuestionListPage = lazy(() => import("../pages/question/MyQuestionListPage")) 
 
-// test
-const Test = lazy(() => import("../pages/Test"))
-const Test2 = lazy(() => import("../pages/Test2"))
-
- 
-
 const root = createBrowserRouter(
 
     [
@@ -147,16 +141,6 @@ const root = createBrowserRouter(
         {
             path:"/customer/question/response",
             element: <Suspense fallback={Loading}><QuestionResponsePage/></Suspense>
-        },
-
-
-        {
-            path:"/test",
-            element: <Suspense fallback={Loading}><Test/></Suspense>
-        },
-        {
-            path:"/test2",
-            element: <Suspense fallback={Loading}><Test2/></Suspense>
         },
 
     ]
