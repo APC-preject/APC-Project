@@ -5,7 +5,7 @@ import { databaseRef, get, update, getDatabase } from '../../firebase/FirebaseIn
 import { useUserStore } from '../../store/UserStore';
 
 const OrderManagementDetailPage = () => {
-  const {id} = useUserStore()
+  const {id} = useUserStore();
   const [queryParams] = useSearchParams();
   const userId = queryParams.get('userId');
   const replacedUserId = userId.replace('_', '.');
@@ -29,44 +29,87 @@ const OrderManagementDetailPage = () => {
   };
   
   //배송 출발 처리
-  const handleProcessDelivery = () => {
-    try{
+  const handleProcessDelivery = async () => {
+    try {
       if (trackingNumber === '') {
         alert('운송장 번호를 입력해주십시오')
         return
       }
-      const departedDate = new Date().toLocaleString();
-      const updates = {}
-      updates[`orders/${userId}/${orderId}/departedDate`] = departedDate
-      updates[`orders/${userId}/${orderId}/deliveryStatus`] = 1
-      updates[`deliveryWaits/${id}/${orderInfo.productId}/${orderId}/deliveryStatus`] = 1
-      updates[`orders/${userId}/${orderId}/trackingNum`] = trackingNumber
-      // 배송 상태 업데이트
-      update(databaseRef(database), updates)
+      const response = await fetch(`http://localhost:4000/ordersGo/${id}/${orderId}`, {
+        method: 'POST',
+        body: JSON.stringify({ 
+          trackingNumber: trackingNumber,
+          productId: orderInfo.productId
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        alert ('배송 출발 처리에 실패했습니다.:', response.body['message']);
+        return;
+      }
       setIsDeparted(true)
       alert('배송 출발 처리 완료')
-      handleNavigateOrderManagement()    
-    } catch(error) {
+      handleNavigateOrderManagement();
+    } catch (error) {
       alert ('배송 출발 처리에 실패했습니다.', error)
     }
-    
-     
+    // try{
+    //   if (trackingNumber === '') {
+    //     alert('운송장 번호를 입력해주십시오')
+    //     return
+    //   }
+    //   const departedDate = new Date().toLocaleString();
+    //   const updates = {}
+    //   updates[`orders/${userId}/${orderId}/departedDate`] = departedDate
+    //   updates[`orders/${userId}/${orderId}/deliveryStatus`] = 1
+    //   updates[`deliveryWaits/${id}/${orderInfo.productId}/${orderId}/deliveryStatus`] = 1
+    //   updates[`orders/${userId}/${orderId}/trackingNum`] = trackingNumber
+    //   // 배송 상태 업데이트
+    //   update(databaseRef(database), updates)
+    //   setIsDeparted(true)
+    //   alert('배송 출발 처리 완료')
+    //   handleNavigateOrderManagement()    
+    // } catch(error) {
+    //   alert ('배송 출발 처리에 실패했습니다.', error)
+    // }
   };
   //배송 도착 처리
-  const handleArrivalDelivery = () => {
-    try{
-      const arrivedDate = new Date().toLocaleString();
-      const updates = {}
-      updates[`orders/${userId}/${orderId}/arrivedDate`] = arrivedDate
-      updates[`orders/${userId}/${orderId}/deliveryStatus`] = 2
-      updates[`deliveryWaits/${id}/${orderInfo.productId}/${orderId}`] = null
-    
-      update(databaseRef(database), updates)
+  const handleArrivalDelivery = async() => {
+    try {
+      const response = await fetch(`http://localhost:4000/ordersArrive/${id}/${orderId}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          productId: orderInfo.productId
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        alert ('배송 도착 처리에 실패했습니다.:', response.body['message']);
+        return;
+      }
       alert('배송 도착 처리 완료')
-      handleNavigateOrderManagement()
-    } catch(error) {
-      alert('도착 완료 처리에 실패했습니다.', error)
+      handleNavigateOrderManagement();
+    } catch (error) {
+      alert ('배송 도착 처리에 실패했습니다.', error)
     }
+
+    // try{
+    //   const arrivedDate = new Date().toLocaleString();
+    //   const updates = {}
+    //   updates[`orders/${userId}/${orderId}/arrivedDate`] = arrivedDate
+    //   updates[`orders/${userId}/${orderId}/deliveryStatus`] = 2
+    //   updates[`deliveryWaits/${id}/${orderInfo.productId}/${orderId}`] = null
+    
+    //   update(databaseRef(database), updates)
+    //   alert('배송 도착 처리 완료')
+    //   handleNavigateOrderManagement()
+    // } catch(error) {
+    //   alert('도착 완료 처리에 실패했습니다.', error)
+    // }
     
   };
 
@@ -77,9 +120,17 @@ const OrderManagementDetailPage = () => {
 
   //배송 출발 상태 조회 함수
   async function getOrderInfo() {
-    const orderRef = databaseRef(database, `orders/${userId}/${orderId}`);
-    const snapshot = await get(orderRef);
-    return snapshot.val();
+    try {
+      const response = await fetch(`http://localhost:4000/orders/${userId}/${orderId}`);
+      if (!response.ok) {
+        throw new Error('Network response error!');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching order info:', error);
+      throw error;
+    }
   }
 
   // 주문 상세 데이터 조회 처리
