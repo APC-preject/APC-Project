@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
 const adminKey = require('./unity-apc-firebase-adminsdk.json');
 
@@ -15,7 +14,6 @@ const port = 4001;
 
 app.use(cors());
 app.use(express.json());
-app.use(bodyParser.json());
 
 // 유저 문의 리스트 가져오기
 app.get('/userQuestions/:userId', async (req, res) => {
