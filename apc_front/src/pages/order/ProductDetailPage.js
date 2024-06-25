@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import BasicLayout from '../../layout/BasicLayout';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { get, ref as databaseRef, getDatabase, push, runTransaction, update } from 'firebase/database';
 import { useUserStore } from '../../store/UserStore';
 import { useAuthStore } from '../../store/AuthStore';
 import MessageModal from '../../modal/MessageModal';
@@ -21,7 +20,6 @@ const ProductDetailPage = () => {
   const [roadAddress, setRoadAddress] = useState('');
   const [detailAddress, setDetailAddress] = useState('');
   const [provider_Name, setProvider_Name] = useState('');
-  const database = getDatabase();
   const [reviews, setReviews] = useState([{}]);
   
   // 도로명 주소 입력 변화
@@ -46,25 +44,43 @@ const ProductDetailPage = () => {
 
   // 제품 정보 조회 함수
   async function getProductInfo(productId) {
-    const productsRef = databaseRef(database, `products/${productId}`);
-    const snapshot = await get(productsRef);
-    return snapshot;
+    try {
+      const response = await fetch(`http://localhost:4000/products/${productId}`);
+      if (!response.ok) {
+        throw new Error('Network response error!');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      return null;
+    }
   }
 
   // 제품 리뷰 목록 조회 함수
   async function getReviewList() {
-    const reviewRef = databaseRef(database, `reviews/${productId}`)
-    const snapshot = await get(reviewRef)
-    return snapshot.val()
+    try {
+      const response = await fetch(`http://localhost:4000/reviews/${productId}`);
+      if (!response.ok && response.status !== 404) {
+        throw new Error('Network response error!');
+      }
+      let data = [];
+      if (response.status !== 404) {
+        data = await response.json();
+      }
+      return data;
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      return null;
+    }
   }
 
   // 컴포넌트 마운트 시, 제품 상세정보 조회, 리뷰 조회 실행
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        const snapshot = await getProductInfo(productId);
-        if (snapshot.exists()) {
-          const data = snapshot.val();
+        const data = await getProductInfo(productId);
+        if (data) {
           data.id = productId;
           setLeftQuantity(data.pQuantity);
           setProduct(data);
@@ -127,79 +143,86 @@ const ProductDetailPage = () => {
 
   // 모달에서 확인을 눌렀을 때 실제 주문 처리
   const handleConfirmOrder = async () => {
-    const orderRef = databaseRef(database, `orders/${id}`);
     const orderedDate = new Date().toLocaleString();
     const productName = product.pName;
     const orderedPrice = product.pPrice * quantity;
     const orderedProductId = productId;
 
-    // 수량 업데이트 및 검사로직
+    const newOrder = {
+      orderedDate,
+      orderedProductId,
+      orderedProductName: productName,
+      orderedQuantity: quantity,
+      orderedPrice,
+      trackingNum: '',
+      deliveryStatus: 0,
+      departedDate: '',
+      arrivedDate: '',
+      isReviewed: 0,
+      roadAddress: roadAddress,
+      detailAddress: detailAddress,
+    };
+
+    const newDeliveryWait = {
+      userID: id,
+      productName : productName,
+      orderedDate,
+      deliveryStatus : 0
+    };
+
+    console.log(id);
+
+    const send_data = {
+      newOrder: newOrder, 
+      newDeliveryWait: newDeliveryWait, 
+      id: id, 
+      productId: productId, 
+      quantity: quantity, 
+      provider_Name: provider_Name, 
+      orderedPrice: orderedPrice
+    }
+
     try {
-      const productRef = databaseRef(database, `products/${productId}`);
-
-      await runTransaction(productRef, (product) => {
-        if (product) {
-          if (product.pQuantity >= quantity) {
-            product.pQuantity -= quantity;
-          } else {
-            throw new Error('주문 수량이 재고 수량보다 많습니다.');
-          }
-        }
-        return product;
+      const response = await fetch(`http://localhost:4000/orders`, {
+        method: 'POST',
+        body: JSON.stringify(send_data),
+        headers: {
+          'Content-Type': 'application/json' // Content-Type 헤더 추가
+        },
       });
-
-      try {
-        // 새로운 주문 정보
-        const newOrder = {
-          orderedDate,
-          orderedProductId,
-          orderedProductName: productName,
-          orderedQuantity: quantity,
-          orderedPrice,
-          trackingNum: '',
-          deliveryStatus: 0,
-          departedDate: '',
-          arrivedDate: '',
-          isReviewed: 0,
-          roadAddress: roadAddress,
-          detailAddress: detailAddress,
-        };
-
-        const newDeliveryWait = {
-          userID: id,
-          productName : productName,
-          orderedDate,
-          deliveryStatus : 0
-        };
-        // 주문 정보 db에 저장
-        const newOrderRef = push(orderRef);
-
-        const orderID = newOrderRef.key;
-
-        const updates = {};
-        updates[`orders/${id}/${orderID}`] = newOrder;
-        updates[`deliveryWaits/${provider_Name}/${productId}/${orderID}`] = newDeliveryWait;
-
-        // 주문 관련 데이터 동시 업데이트 (원자성 만족)
-        await update(databaseRef(database), updates);
-
-        alert(`총 ${quantity}kg 주문하셨습니다. 가격은 ${orderedPrice}원 입니다.`);
-        handleNavigateProductList();
-      } catch (error) {
-        alert('주문 데이터 저장 중 문제가 발생했습니다.', error);
-        // 주문 데이터 저장 중 문제 생겼으니 뺏던 수량 원상 복구
-        await runTransaction(productRef, (product) => {
-          if (product) {
-            product.pQuantity += quantity;
-          }
-          return product;
-        });
-        return;
+      alert(`총 ${quantity}kg 주문하셨습니다. 가격은 ${orderedPrice}원 입니다.`);
+      handleNavigateProductList();
+      if (!response.ok) {
+        throw new Error(response.json().message);
       }
     } catch (error) {
-      alert('수량 확인 및 업데이트 중 문제가 발생했습니다.', error);
+      alert('주문 처리 중 문제가 발생했습니다.', error);
       return;
     }
+
+
+    // 수량 업데이트 및 검사로직
+    // try {
+    //   try {
+        
+
+    //     alert(`총 ${quantity}kg 주문하셨습니다. 가격은 ${orderedPrice}원 입니다.`);
+    //     handleNavigateProductList();
+    //   } catch (error) {
+    //     alert('주문 데이터 저장 중 문제가 발생했습니다.', error);
+    //     // 주문 데이터 저장 중 문제 생겼으니 뺏던 수량 원상 복구
+    //     await runTransaction(productRef, (product) => {
+    //       if (product) {
+    //         product.pQuantity += quantity;
+    //       }
+    //       return product;
+    //     });
+    //     return;
+    //   }
+    // } catch (error) {
+    //   alert('수량 확인 및 업데이트 중 문제가 발생했습니다.', error);
+    //   return;
+    // }
   };
 
   //Todo: 실제 상품이 존재하지 않는 경우가 아니라 database에서 로드되는 도중에도 이부분이 잠시 나타남. 이에 대한 처리 필요
