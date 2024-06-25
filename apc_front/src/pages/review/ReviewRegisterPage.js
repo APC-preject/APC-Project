@@ -2,27 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams , useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
-import { get, databaseRef, getDatabase, update, push, child } from '../../firebase/FirebaseInstance'
+import axios from 'axios';
 import { useUserStore } from '../../store/UserStore';
 
 function ReviewRegisterPage() {
-
-  const { user } = useAuthStore()
-  const { id } = useUserStore()
+  const { user } = useAuthStore();
+  const { id } = useUserStore();
   const navigate = useNavigate();
   const [productInfo, setProductInfo] = useState(null);
   const [rating, setRating] = useState(0);
   const [content, setContent] = useState('');
-  const [queryParams] = useSearchParams()
+  const [queryParams] = useSearchParams();
   const productId = queryParams.get('productId');
   const orderId = queryParams.get('orderId');
-  const database = getDatabase()
-
-  async function getProductInfo() {
-    const orderRef = databaseRef(database, `products/${productId}`);
-    const snapshot = await get(orderRef);
-    return {key: snapshot.key , ...snapshot.val()};
-  }
 
   const handleRatingChange = (selectedRating) => {
     setRating(selectedRating);
@@ -39,18 +31,12 @@ function ReviewRegisterPage() {
   useEffect(() => {
     const fetchProductInfo = async () => {
       try {
-        const productData = await getProductInfo();
-        if (productData) {
-          setProductInfo({
-            id : productData.key,
-            name : productData.pName
-          });
-          
-        }
-        else{
-          return
-        }
-    
+        const response = await axios.get(`http://localhost:4002/products/${productId}`);
+        const productData = response.data;
+        setProductInfo({
+          id : productId,
+          name : productData.pName
+        });
       } catch (error) {
         alert('제품 정보를 불러오는데 오류가 발생했습니다.', error)
         console.log(error)
@@ -60,20 +46,24 @@ function ReviewRegisterPage() {
   }, []);
 
 
-  const handleSubmit = () => {
-    const reviewData = 
-    {
+  const handleSubmit = async() => {
+    const reviewData = {
       userID : id,
       rating,
       content
+    };
+    try {
+      await axios.post('http://localhost:4002/reviews', {
+        userId: id,
+        productId,
+        orderId,
+        reviewData
+      });
+      navigate(`/review/ableList`);
+    } catch(error) {
+      alert('리뷰를 등록하는데 실패했습니다.');
+      console.log(error);
     }
-    const reviewKey = push(child(databaseRef(database), `reviews/${productInfo.id}`)).key
-    const updates = {}
-    updates[`reviews/${productId}/${reviewKey}`] = reviewData
-    updates[`orders/${id}/${orderId}/isReviewed`] = 1
-    update(databaseRef(database), updates)
-    // 리뷰 등록 후 리뷰 가능한 제품 목록 페이지로 이동
-    handleNavigateReviewalbeList()
   };
 
   if (!user) {
