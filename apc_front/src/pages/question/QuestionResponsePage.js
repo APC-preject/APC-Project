@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
-import { databaseRef, get, getDatabase, set } from '../../firebase/FirebaseInstance';
+import axios from 'axios';
 
 const QuestionResponsePage = () => {
   const navigate = useNavigate();
@@ -9,27 +9,19 @@ const QuestionResponsePage = () => {
   const questionId = queryParams.get('id');
   const [question, setQuestion] = useState({});
   const [response, setResponse] = useState('');
-  const database = getDatabase();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const questionsRef = databaseRef(database, `questions/${questionId}`);
-        const snapshot = await get(questionsRef);
-
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          setQuestion(data);
-        } else {
-          alert('문의 id에 해당하는 데이터를 가져올 수 없습니다.');
-        }
+        const response = await axios.get(`http://localhost:4001/questions/${questionId}`);
+        setQuestion(response.data);
       } catch (error) {
-        alert('문의 리스트를 불러오던중 문제가 생겼습니다.' + error.message);
-      } 
+        alert('문의 데이터를 가져오는 중 문제가 발생했습니다.' + error.message);
+      }
     };
 
     fetchData();
-  }, [database, questionId]);
+  }, [questionId]);
 
   const handleGoBack = () => {
     navigate(-1);
@@ -37,8 +29,7 @@ const QuestionResponsePage = () => {
 
   const handleSubmitResponse = async () => {
     try {
-      const responseRef = databaseRef(database, `questions/${questionId}/response`);
-      await set(responseRef, response); 
+      await axios.post(`http://localhost:4001/questions/${questionId}/response`, { response });
       alert('답변이 성공적으로 제출되었습니다.');
       setResponse('');
     } catch (error) {
@@ -63,8 +54,8 @@ const QuestionResponsePage = () => {
               <span className="text-sm text-sub">문의유저: {question.userID}</span>
             </div>
           </div>
-          <div className=" p-6 mb-6 bg-textbgHov rounded-lg">
-            <h2 className='text-l font-bold mb-2 text-sub'>문의 내용</h2>
+          <div className="p-6 mb-6 bg-textbgHov rounded-lg">
+            <h2 className="text-l font-bold mb-2 text-sub">문의 내용</h2>
             <p className="text-sub leading-7">{question.content}</p>
           </div>
           <div className="mb-6">
