@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
-import { get, getDatabase, databaseRef } from '../../firebase/FirebaseInstance'
+import axios from 'axios';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
 
 
 function ReviewableListPage() {
-  const { user } = useAuthStore()
-  const { id, replaceId } = useUserStore()
-  const navigate = useNavigate()
-  const database = getDatabase()
-  const [reviewables, setReviewables] = useState([])
-
-  //주문 정보 조회 함수
-  async function getOrderInfo() {
-    const orderRef = databaseRef(database, `orders/${id}`);
-    const snapshot = await get(orderRef);
-    return snapshot
-  }
+  const { user } = useAuthStore();
+  const { id, replaceId } = useUserStore();
+  const navigate = useNavigate();
+  const [reviewables, setReviewables] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,20 +18,14 @@ function ReviewableListPage() {
         return
       }
       try {
-        const snapshot = await getOrderInfo(id);
-        console.log(snapshot)
-        if (snapshot.val()) {
-          const data = snapshot.val()
-          const ordersArray = Object.entries(data).map(([key, value]) => ({
-            id: key,
-            ...value,
-          }));
-          const reviewableArray = ordersArray.filter(order => order.deliveryStatus === 2 && order.isReviewed === 0);
-          setReviewables(reviewableArray)
-        } else {
-          
-          setReviewables([]);
-        }
+        const response = await axios.get(`http://localhost:4002/orders/${id}`);
+        const data = response.data;
+        const ordersArray = Object.entries(data).map(([key, value]) => ({
+          id: key,
+          ...value,
+        }));
+        const reviewableArray = ordersArray.filter(order => order.deliveryStatus === 2 && order.isReviewed === 0);
+        setReviewables(reviewableArray)
       } catch (error) {
         alert("배송 정보를 가져오던 중 에러가 발생했습니다.: " + error.message);
       }
