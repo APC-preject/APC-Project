@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
-import { storage, uploadBytes, databaseRef, storageRef, getDownloadURL, getDatabase, push, set } from '../../firebase/FirebaseInstance'; // Firebase Storage 모듈 가져오기
 import { useUserStore } from '../../store/UserStore';
 
 
@@ -45,7 +44,6 @@ function ProductRegisterPage() {
   };
 
   const handleSubmit = async () => {
-    const dbRef = databaseRef(getDatabase(), 'products');
     const providerId = await replaceId(id);
     const currentTime = new Date(); // 현재 시간
   
@@ -58,35 +56,52 @@ function ProductRegisterPage() {
       pImageUrl: '',
       registerTime: currentTime.getTime(), // 현재 시간을 밀리초 단위로 저장
     };
+
+    const uploadDB = async (product_data) => {
+      try {
+        const response = await fetch(`http://localhost:4000/products`, {
+          method: 'POST',
+          body: JSON.stringify({
+            product_data: product_data
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        if (!response.ok) {
+          throw new Error('Network response error!');
+        }
+        alert('데이터베이스 저장 완료');
+        console.log({ productData });
+      } catch (error) {
+        alert('데이터베이스 저장 실패');
+        console.error('Error adding product:', error);
+      }
+    }
   
     if (imageFile) {
-      const storageRefInstance = storageRef(storage, `product_images/${imageFile.name}`);
-      await uploadBytes(storageRefInstance, imageFile)
-        .then(() => {
-          alert('업로드 완료');
-          return getDownloadURL(storageRefInstance);
-        })
-        .then((url) => {
-          productData.pImageUrl = url;
-          const newProductRef = push(dbRef, null);
-          const newProductKey = newProductRef.key;
-          set(databaseRef(getDatabase(), `products/${newProductKey}`), productData);
-          alert('데이터베이스 저장 완료');
-  
-          console.log({ productData });
-  
-          navigate('/product/list');
-        })
-        .catch((error) => {
-          console.error('Error getting download URL:', error);
+      try {
+        console.log(imageFile);
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        console.log(formData);
+        const response = await fetch(`http://localhost:4000/productImages/${imageFile.name}`, {
+          method: 'POST',
+          body: formData
         });
+        if (!response.ok) {
+          throw new Error('Network response error!');
+        }
+        const url = await response.json();
+        productData.pImageUrl = url['url'];
+        await uploadDB(productData);
+        navigate('/product/list');
+      } catch (error) {
+        console.error('Error getting download URL:', error);
+      }
     } else {
-      const newProductRef = push(dbRef, null);
-      const newProductKey = newProductRef.key;
-      set(databaseRef(getDatabase(), `products/${newProductKey}`), productData);
-      alert('데이터베이스 저장 완료');
-      console.log({ productData });
-  
+      await uploadDB(productData);
       navigate('/product/list');
     }
   };

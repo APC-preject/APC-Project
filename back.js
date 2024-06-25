@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
 const adminKey = require('./unity-apc-firebase-adminsdk.json');
+const multer = require('multer');
 
 admin.initializeApp({
   credential: admin.credential.cert(adminKey),
@@ -114,8 +115,44 @@ app.get('/products', async (req, res) => {
   }
 });
 
+app.post('/products', async (req, res) => {
+  const {product_data} = req.body;
+  const productRef = db.ref(`products`);
+  try {
+    const result = await productRef.push(product_data);
+    if (result) {
+      res.status(200).json(product_data);
+    } else {
+      res.status(404).json({ message: 'product can\'t register' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching products', error });
+  }
+});
 
+const multstorage = multer.memoryStorage();
+const upload = multer({ storage: multstorage });
 
+// image file 을 POST 로 받아서 firebase store 에 저장하는 API
+app.post('/productImages/:name', upload.single('image'), async (req, res) => {
+  const { name } = req.params;
+  const image = req.file.buffer;
+  const bucket = admin.storage().bucket('unity-apc.appspot.com');
+  try {
+    const file = bucket.file(`product_images/${name}`);
+    await file.save(image, {
+      metadata: { contentType: req.file.mimetype }
+    });
+    const url = await file.getSignedUrl({
+      action: 'read', // Read access
+      expires: '03-01-2500' // URL expiration date
+    });
+    res.status(200).json({ url: url[0] });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ message: 'Error uploading image', error });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
