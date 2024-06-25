@@ -12,7 +12,6 @@ const OrderManagementDetailPage = () => {
   const orderId = queryParams.get('orderId');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [isDeparted, setIsDeparted] = useState(false); // 배송 출발 여부 상태 추가
-  const database = getDatabase()
   const navigate = useNavigate()
   const [gettedTrackingNumber, setGettedTrackingNumber] = useState('')
   const [orderInfo, setOrderInfo] = useState({
