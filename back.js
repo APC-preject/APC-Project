@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
-const adminKey = require('./unity-apc-firebase-adminsdk.json');
+const adminKey = require('./secrets/unity-apc-firebase-adminsdk.json');
 const multer = require('multer');
 const axios = require('axios');
 const dotenv = require('dotenv');
@@ -10,7 +10,11 @@ const cookieParser = require('cookie-parser');
 dotenv.config({path: './secrets/.env'});
 
 const {
-  API_KEY
+  API_KEY,
+  PORT,
+  HOST,
+  FRONT_ORIGIN_URL,
+  NODE_ENV
 } = process.env;
 
 admin.initializeApp({
@@ -20,10 +24,9 @@ admin.initializeApp({
 
 const db = admin.database();
 const app = express();
-const port = 4000;
 
 const corsOptions = {
-  origin: 'http://localhost:4001', // 클라이언트 도메인
+  origin: FRONT_ORIGIN_URL, // 클라이언트 도메인
   credentials: true
 };
 
@@ -49,7 +52,7 @@ app.post('/login', async (req, res) => {
 
     res.cookie('idToken', idToken, {
       httpOnly: true,
-      secure: false, // process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
+      secure: NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
       // maxAge: response.data.expiresIn * 1000 // session cookie로 만들어 탭 닫으면 쿠키 삭제
     });
 
@@ -248,7 +251,6 @@ app.post('/products', async (req, res) => {
 const multstorage = multer.memoryStorage();
 const upload = multer({ storage: multstorage });
 
-// image file 을 POST 로 받아서 firebase store 에 저장하는 API
 app.post('/productImages/:name', upload.single('image'), async (req, res) => {
   const { name } = req.params;
   const image = req.file.buffer;
@@ -346,6 +348,186 @@ app.post('/orders', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+// 유저 문의 리스트 가져오기
+app.get('/userQuestions/:userId', async (req, res) => {
+  const userId = req.params.userId;
+  const ref = db.ref(`userQuestions/${userId}`);
+  try {
+    const snapshot = await ref.once('value');
+    if(snapshot.exists()) {
+      res.status(200).send(snapshot.val());
+    } else {
+      res.status(404).send('No data available');
+    }
+  } catch(error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// 전체 문의 리스트 가져오기
+app.get('/questions', async (req, res) => {
+  const ref = db.ref('questions');
+  try {
+    const snapshot = await ref.once('value');
+    if (snapshot.exists()) {
+      res.status(200).send(snapshot.val());
+    } else {
+      res.status(404).send('No data available');
+    }
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// 특정 문의 가져오기
+app.get('/questions/:questionId', async (req, res) => {
+  const questionId = req.params.questionId;
+  const ref = db.ref(`questions/${questionId}`);
+  try {
+    const snapshot = await ref.once('value');
+    if (snapshot.exists()) {
+      res.status(200).send(snapshot.val());
+    } else {
+      res.status(404).send('No data available');
+    }
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// 문의 작성
+app.post('/questions', async (req, res) => {
+  const { userId, questionData } = req.body;
+  const newQuestionRef = db.ref('questions').push();
+  try {
+    await newQuestionRef.set(questionData);
+    await db.ref(`userQuestions/${userId}/${newQuestionRef.key}`).set(questionData);
+    res.status(201).send('Question created successfully');
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// 문의 답변
+app.post('/questions/:questionId/response', async (req, res) => {
+  const questionId = req.params.questionId;
+  const { response } = req.body;
+  try {
+    await db.ref(`questions/${questionId}/response`).set(response);
+    res.status(200).send('Response submitted successfully');
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// 특정 사용자 주문 정보 가져오기
+app.get('/orders/:userId', async (req, res) => {
+  const userId = req.params.userId;
+  const ref = db.ref(`orders/${userId}`);
+  try {
+    const snapshot = await ref.once('value');
+    if(snapshot.exists()) {
+      res.status(200).send(snapshot.val());
+    } else {
+      res.status(404).send('No data available');
+    }
+  } catch(error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// 특정 제품 정보 가져오기
+app.get('/products/:productId', async (req, res) => {
+  const productId = req.params.productId;
+  const ref = db.ref(`products/${productId}`);
+  try {
+    const snapshot = await ref.once('value');
+    if(snapshot.exists()) {
+      res.status(200).send(snapshot.val());
+    } else {
+      res.status(404).send('No data available');
+    }
+  } catch(error) {
+    res.status(500).send(error.message);
+  }
+});
+
+// 사용자가 쓴 리뷰 올리고 해당 제품 리뷰 올린거 업데이트
+app.post('/reviews', async (req, res) => {
+  const { userId, productId, orderId, reviewData } = req.body;
+  const reviewKey = db.ref(`reviews/${productId}`).push().key;
+  const updates = {};
+  updates['reviews/${productId}/${reviewKey}'] = reviewData;
+  updates['orders/${userId}/${orderId}/isReviewed'] = 1;
+  try {
+      await db.ref().update(updates);
+      res.status(201).send('Review created successfully and order updated');
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
+
+// 사용자 정보 받기(내 정보 페이지)
+app.get('/user/:id', async (req, res) => {
+  const userId = req.params.id;
+  const userRef = db.ref(`users/${userId}`);
+  userRef.once('value', snapshot => {
+    if (snapshot.exists()) {
+      res.json(snapshot.val());
+    } else {
+      res.status(404).send('User not found');
+    }
+  }, error => {
+    res.status(500).send('Error getting user data:', error);
+  });
+});
+
+// 비밀번호 변경
+app.post('/user/:id/password', async (req, res) => {
+  const userId = req.params.id;
+  const { currentPassword, newPassword } = req.body;
+  const idToken = req.cookies?.idToken;
+  
+  const FIREBASE_AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${API_KEY}`;
+
+  try {
+    const response = await axios.post(FIREBASE_AUTH_URL, {
+      idToken: idToken,
+      password: newPassword,
+      returnSecureToken: true
+    });
+    if (response.data.error) {
+      console.log("asdf");
+      throw new Error('Error updating password');
+    }
+    const newidToken = response.data.idToken;
+
+    res.cookie('idToken', newidToken, {
+      httpOnly: true,
+      secure: NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
+      // maxAge: response.data.expiresIn * 1000 // session cookie로 만들어 탭 닫으면 쿠키 삭제
+    });
+  } catch (error) {
+    console.log('Error updating password:');
+    res.status(500).send('Error updating password');
+    return ;
+  }
+  const userRef = db.ref(`users/${userId}`);
+  userRef.child('password').once('value', async (snapshot) => {
+    const storedPassword = snapshot.val();
+    if (storedPassword === currentPassword) {
+      await userRef.child('password').set(newPassword);
+      res.send('Password updated successfully');
+    } else {
+      console.log('Current password does not match');
+      res.status(400).send('Current password does not match');
+    }
+  }, error => {
+    console.log('Error updating password:');
+    res.status(500).send('Error updating password:');
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://${HOST}:${PORT}`);
 });

@@ -18,7 +18,9 @@ function ReviewableListPage() {
         return
       }
       try {
-        const response = await axios.get(`http://localhost:4002/orders/${id}`);
+        const response = await axios.get(`http://localhost:4000/orders/${id}`, {
+          withCredentials: true,
+        });
         const data = response.data;
         const ordersArray = Object.entries(data).map(([key, value]) => ({
           id: key,

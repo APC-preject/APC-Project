@@ -14,7 +14,9 @@ const QuestionDetailPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:4001/questions/${questionId}`);
+        const response = await axios.get(`http://localhost:4000/questions/${questionId}`, {
+          withCredentials: true,
+        });
         setQuestion(response.data);
       } catch (error) {
         alert('문의 데이터를 가져오는 중 문제가 발생했습니다.' + error.message);
