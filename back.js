@@ -32,6 +32,105 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const FIREBASE_AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`;
+  
+  try {
+    const response = await axios.post(FIREBASE_AUTH_URL, {
+      email,
+      password,
+      returnSecureToken: true
+    });
+    if (response.data.error) {
+      throw new Error('Invalid email or password');
+    }
+    const idToken = response.data.idToken;
+
+    res.cookie('idToken', idToken, {
+      httpOnly: true,
+      secure: false, // process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
+      // maxAge: response.data.expiresIn * 1000 // session cookie로 만들어 탭 닫으면 쿠키 삭제
+    });
+
+    const userId = email.replace(".", "_");
+    const snapshot = await db.ref(`users/${userId}/role`).get();
+    if (snapshot.exists()) {
+      const loggedInUserRole = snapshot.val();
+      res.status(200).json({ 
+        userId: userId, 
+        loggedInUserRole: loggedInUserRole
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(401).json({ message: 'Invalid email or password' });
+  }
+});
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('idToken'); // 쿠키 삭제
+  res.status(200).json({ message: 'Logged out' });
+});
+
+app.post('/register', async (req, res) => {
+  const { 
+    email, password, name, role, apcID, online
+  } = req.body;
+  const FIREBASE_AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`;
+  try {
+    const response = await axios.post(FIREBASE_AUTH_URL, {
+      email,
+      password,
+      returnSecureToken: true
+    });
+    if (response.data.error) {
+      throw new Error('Register failed');
+    }
+    const uid = response.data.localId;
+    const userData = {
+      email: email,
+      name: name,
+      password: password,
+      uid: uid,
+      role : role
+    };
+    // 판매자인 경우 apcId와 online 여부 항목 추가
+    if (role === 1) {
+      userData['apcID'] = apcID;
+      userData['online'] = 0;
+    }
+
+    const userId = email.replace(".", "_");
+    const userRef = db.ref();
+    const updates = {};
+    updates[`users/${userId}`] = userData;
+    await userRef.update(updates);
+
+    res.status(200).json({ message: '회원가입 성공' });
+  } catch (error) {
+    console.error('Error creating user: ', error);
+    res.status(500).json({ message: '회원가입 실패', error });
+  }
+});
+
+app.use(async (req, res, next) => {
+  const idToken = req.cookies?.idToken;
+  if (!idToken) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    req.userEmail = decodedToken.email?.replace(".", "_");
+    console.log(req.userEmail);
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Unauthorized' });
+  }
+});
+
 app.get('/orders/:id', async (req, res) => {
   const { id } = req.params;
   const orderRef = db.ref(`orders/${id}`);
@@ -244,85 +343,6 @@ app.post('/orders', async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: '수량 확인 및 업데이트 중 문제가 발생했습니다.', error });
-  }
-});
-
-app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  const FIREBASE_AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`;
-  
-  try {
-    const response = await axios.post(FIREBASE_AUTH_URL, {
-      email,
-      password,
-      returnSecureToken: true
-    });
-    if (response.data.error) {
-      throw new Error('Invalid email or password');
-    }
-    const idToken = response.data.idToken;
-
-    res.cookie('idToken', idToken, {
-      httpOnly: true,
-      secure: false, // process.env.NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용
-      maxAge: response.data.expiresIn * 1000,
-    });
-
-    const userId = email.replace(".", "_");
-    const snapshot = await db.ref(`users/${userId}/role`).get();
-    if (snapshot.exists()) {
-      const loggedInUserRole = snapshot.val();
-      res.status(200).json({ 
-        userId: userId, 
-        loggedInUserRole: loggedInUserRole
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(401).json({ message: 'Invalid email or password' });
-  }
-});
-
-app.post('/register', async (req, res) => {
-  const { 
-    email, password, name, role, apcID, online
-  } = req.body;
-  const FIREBASE_AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`;
-  try {
-    const response = await axios.post(FIREBASE_AUTH_URL, {
-      email,
-      password,
-      returnSecureToken: true
-    });
-    if (response.data.error) {
-      throw new Error('Register failed');
-    }
-    const uid = response.data.localId;
-    const userData = {
-      email: email,
-      name: name,
-      password: password,
-      uid: uid,
-      role : role
-    };
-    // 판매자인 경우 apcId와 online 여부 항목 추가
-    if (role === 1) {
-      userData['apcID'] = apcID;
-      userData['online'] = 0;
-    }
-
-    const userId = email.replace(".", "_");
-    const userRef = db.ref();
-    const updates = {};
-    updates[`users/${userId}`] = userData;
-    await userRef.update(updates);
-
-    res.status(200).json({ message: '회원가입 성공' });
-  } catch (error) {
-    console.error('Error creating user: ', error);
-    res.status(500).json({ message: '회원가입 실패', error });
   }
 });
 
