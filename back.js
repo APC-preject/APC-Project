@@ -457,8 +457,8 @@ app.post('/reviews', async (req, res) => {
   const { userId, productId, orderId, reviewData } = req.body;
   const reviewKey = db.ref(`reviews/${productId}`).push().key;
   const updates = {};
-  updates['reviews/${productId}/${reviewKey}'] = reviewData;
-  updates['orders/${userId}/${orderId}/isReviewed'] = 1;
+  updates[`reviews/${productId}/${reviewKey}`] = reviewData;
+  updates[`orders/${userId}/${orderId}/isReviewed`] = 1;
   try {
       await db.ref().update(updates);
       res.status(201).send('Review created successfully and order updated');

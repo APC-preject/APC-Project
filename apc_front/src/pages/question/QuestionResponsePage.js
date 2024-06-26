@@ -31,7 +31,9 @@ const QuestionResponsePage = () => {
 
   const handleSubmitResponse = async () => {
     try {
-      await axios.post(`http://localhost:4000/questions/${questionId}/response`, { response });
+      await axios.post(`http://localhost:4000/questions/${questionId}/response`, { response }, {
+        withCredentials: true,
+      });
       alert('답변이 성공적으로 제출되었습니다.');
       setResponse('');
     } catch (error) {
