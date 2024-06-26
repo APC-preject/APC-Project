@@ -1,8 +1,5 @@
 import React, { useState, useCallback, useEffect} from 'react'
 import { useNavigate } from "react-router-dom"
-import { getDatabase, ref, child, get } from "firebase/database";
-import { auth } from "../../firebase/FirebaseInstance";
-import { signInWithEmailAndPassword } from "firebase/auth"
 import { useUserStore } from '../../store/UserStore';
 import BasicLayout from '../../layout/BasicLayout';
 
@@ -48,27 +45,28 @@ export default function LoginPage() {
   
   const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      const userId = email.replace(".", "_");
-      const dbRef = ref(getDatabase());
-      // Check the 'user/0' path
-      await get(child(dbRef, `users/${userId}/role`)).then((snapshot) => {
-        if (snapshot.exists()) {
-          const loggedInUserRole = snapshot.val()
-          console.log(loggedInUserRole)
-          console.log(userId)
-      
-          const userData = {id:userId, role:loggedInUserRole}
-          setUserData(userData); // Save user data in the store
-          alert('로그인 성공');
-          console.log(userData)
-          handleClickMain(); // Redirect after successful login
-        } else {
-          alert("유저 권한정보를 db에서 찾지 못했습니다.")
-        }
-      }).catch((error) => {
-        alert('권한 정보 조회 중 에러 : '+ error.code)
+      const response = await fetch('http://localhost:4000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email, 
+          password: password
+        }),
+        credentials: 'include',
       });
+      if (!response.ok) {
+        throw new Error('로그인 실패'); ///// 에러처리
+      }
+
+      const data = await response.json();
+      const { userId, loggedInUserRole } = data;
+      const userData = {id:userId, role:loggedInUserRole}
+      setUserData(userData); // Save user data in the store
+      alert('로그인 성공');
+      console.log(userData)
+      handleClickMain(); // Redirect after successful login
     } catch(error) {
       alert('로그인 실패 : ' + error.code);
     }
