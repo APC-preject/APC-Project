@@ -13,7 +13,9 @@ const QuestionResponsePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:4001/questions/${questionId}`);
+        const response = await axios.get(`http://localhost:4000/questions/${questionId}`, {
+          withCredentials: true,
+        });
         setQuestion(response.data);
       } catch (error) {
         alert('문의 데이터를 가져오는 중 문제가 발생했습니다.' + error.message);
@@ -29,7 +31,7 @@ const QuestionResponsePage = () => {
 
   const handleSubmitResponse = async () => {
     try {
-      await axios.post(`http://localhost:4001/questions/${questionId}/response`, { response });
+      await axios.post(`http://localhost:4000/questions/${questionId}/response`, { response });
       alert('답변이 성공적으로 제출되었습니다.');
       setResponse('');
     } catch (error) {

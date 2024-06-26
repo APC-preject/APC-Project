@@ -45,7 +45,9 @@ const QuestionPage = () => {
         content,
         questionDate
       };
-      await axios.post('http://localhost:4001/questions', { userId: id, questionData });
+      await axios.post('http://localhost:4000/questions', { userId: id, questionData }, {
+        withCredentials: true,
+      });
       alert('문의가 등록되었습니다.');
       navigate('/customer/question/list');
     } catch (error) {
