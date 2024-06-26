@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useEffect} from 'react'
 import { useNavigate } from "react-router-dom"
 import { useUserStore } from '../../store/UserStore';
+import { useAuthStore } from '../../store/AuthStore';
 import BasicLayout from '../../layout/BasicLayout';
 
 
 export default function LoginPage() {
   const { setUserData } = useUserStore()
+  const { setUserState } = useAuthStore();
 
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
@@ -64,6 +66,7 @@ export default function LoginPage() {
       const { userId, loggedInUserRole } = data;
       const userData = {id:userId, role:loggedInUserRole}
       setUserData(userData); // Save user data in the store
+      setUserState(userData);
       alert('로그인 성공');
       console.log(userData)
       handleClickMain(); // Redirect after successful login
