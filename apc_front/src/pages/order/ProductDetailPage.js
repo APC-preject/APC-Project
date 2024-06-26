@@ -45,7 +45,9 @@ const ProductDetailPage = () => {
   // 제품 정보 조회 함수
   async function getProductInfo(productId) {
     try {
-      const response = await fetch(`http://localhost:4000/products/${productId}`);
+      const response = await fetch(`http://localhost:4000/products/${productId}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Network response error!');
       }
@@ -60,7 +62,9 @@ const ProductDetailPage = () => {
   // 제품 리뷰 목록 조회 함수
   async function getReviewList() {
     try {
-      const response = await fetch(`http://localhost:4000/reviews/${productId}`);
+      const response = await fetch(`http://localhost:4000/reviews/${productId}`, {
+        credentials: 'include',
+      });
       if (!response.ok && response.status !== 404) {
         throw new Error('Network response error!');
       }
@@ -189,6 +193,7 @@ const ProductDetailPage = () => {
         headers: {
           'Content-Type': 'application/json' // Content-Type 헤더 추가
         },
+        credentials: 'include',
       });
       alert(`총 ${quantity}kg 주문하셨습니다. 가격은 ${orderedPrice}원 입니다.`);
       handleNavigateProductList();

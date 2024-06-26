@@ -50,7 +50,8 @@ export default function RegisterPage() { //Todo: APC관리자, 일반회원 버�
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(userData),
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('회원가입 실패'); ///// 에러처리
