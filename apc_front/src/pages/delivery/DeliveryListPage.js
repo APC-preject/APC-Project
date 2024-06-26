@@ -11,7 +11,9 @@ const DeliveryListPage = () => {
 
   async function getOrderInfo() {
     try {
-      const response = await fetch(`http://localhost:4000/orders/${id}`);
+      const response = await fetch(`http://localhost:4000/orders/${id}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Network response error!');
       }

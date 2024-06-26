@@ -16,13 +16,12 @@ import { getDatabase, databaseRef, get } from '../../firebase/FirebaseInstance'
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:4000/products');
+        const response = await fetch('http://localhost:4000/products', {
+          credentials: 'include',
+        });
         if (!response.ok) {
           throw new Error('Network response error!');
         }
-        // const database = getDatabase();
-        // const productsRef = databaseRef(database, 'products');
-        // const snapshot = await get(productsRef);
         const data = await response.json();
         const productList = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
         productList.sort((a, b) => b.registerTime - a.registerTime);

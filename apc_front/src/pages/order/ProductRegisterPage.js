@@ -66,7 +66,8 @@ function ProductRegisterPage() {
           }),
           headers: {
             'Content-Type': 'application/json'
-          }
+          },
+          credentials: 'include',
         });
         if (!response.ok) {
           throw new Error('Network response error!');
@@ -88,7 +89,8 @@ function ProductRegisterPage() {
         console.log(formData);
         const response = await fetch(`http://localhost:4000/productImages/${imageFile.name}`, {
           method: 'POST',
-          body: formData
+          body: formData,
+          credentials: 'include',
         });
         if (!response.ok) {
           throw new Error('Network response error!');

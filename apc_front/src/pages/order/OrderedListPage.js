@@ -13,7 +13,9 @@ const OrderedListPage = () => {
 
   async function getOrderInfo(id) {
     try {
-      const response = await fetch(`http://localhost:4000/orders/${id}`);
+      const response = await fetch(`http://localhost:4000/orders/${id}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Network response error!');
       }
@@ -23,9 +25,6 @@ const OrderedListPage = () => {
       console.error('Error fetching order info:', error);
       return null;
     }
-    // const ordersRef = databaseRef(database, `orders/${id}`);
-    // const snapshot = await get(ordersRef);
-    // return snapshot;
   }
 
   useEffect(() => {
