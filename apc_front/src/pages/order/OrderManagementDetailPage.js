@@ -43,7 +43,8 @@ const OrderManagementDetailPage = () => {
         }),
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include',
       });
       if (!response.ok) {
         alert ('배송 출발 처리에 실패했습니다.:', response.body['message']);
@@ -55,25 +56,6 @@ const OrderManagementDetailPage = () => {
     } catch (error) {
       alert ('배송 출발 처리에 실패했습니다.', error)
     }
-    // try{
-    //   if (trackingNumber === '') {
-    //     alert('운송장 번호를 입력해주십시오')
-    //     return
-    //   }
-    //   const departedDate = new Date().toLocaleString();
-    //   const updates = {}
-    //   updates[`orders/${userId}/${orderId}/departedDate`] = departedDate
-    //   updates[`orders/${userId}/${orderId}/deliveryStatus`] = 1
-    //   updates[`deliveryWaits/${id}/${orderInfo.productId}/${orderId}/deliveryStatus`] = 1
-    //   updates[`orders/${userId}/${orderId}/trackingNum`] = trackingNumber
-    //   // 배송 상태 업데이트
-    //   update(databaseRef(database), updates)
-    //   setIsDeparted(true)
-    //   alert('배송 출발 처리 완료')
-    //   handleNavigateOrderManagement()    
-    // } catch(error) {
-    //   alert ('배송 출발 처리에 실패했습니다.', error)
-    // }
   };
   //배송 도착 처리
   const handleArrivalDelivery = async() => {
@@ -86,7 +68,8 @@ const OrderManagementDetailPage = () => {
         }),
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include',
       });
       if (!response.ok) {
         alert ('배송 도착 처리에 실패했습니다.:', response.body['message']);
@@ -97,20 +80,6 @@ const OrderManagementDetailPage = () => {
     } catch (error) {
       alert ('배송 도착 처리에 실패했습니다.', error)
     }
-
-    // try{
-    //   const arrivedDate = new Date().toLocaleString();
-    //   const updates = {}
-    //   updates[`orders/${userId}/${orderId}/arrivedDate`] = arrivedDate
-    //   updates[`orders/${userId}/${orderId}/deliveryStatus`] = 2
-    //   updates[`deliveryWaits/${id}/${orderInfo.productId}/${orderId}`] = null
-    
-    //   update(databaseRef(database), updates)
-    //   alert('배송 도착 처리 완료')
-    //   handleNavigateOrderManagement()
-    // } catch(error) {
-    //   alert('도착 완료 처리에 실패했습니다.', error)
-    // }
     
   };
 
@@ -122,7 +91,9 @@ const OrderManagementDetailPage = () => {
   //배송 출발 상태 조회 함수
   async function getOrderInfo() {
     try {
-      const response = await fetch(`http://localhost:4000/orders/${userId}/${orderId}`);
+      const response = await fetch(`http://localhost:4000/orders/${userId}/${orderId}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Network response error!');
       }

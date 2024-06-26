@@ -18,7 +18,9 @@ const OrderManagementPage = () => {
   // 배송 대기 목록 조회 함수
   async function getDeliveryWaits(providerId) {
     try {
-      const response = await fetch(`http://localhost:4000/deliveryWaits/${providerId}`);
+      const response = await fetch(`http://localhost:4000/deliveryWaits/${providerId}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Network response error!');
       }
@@ -28,9 +30,6 @@ const OrderManagementPage = () => {
       console.error('Error fetching order info:', error);
       return null;
     }
-    // const deliveryWaitsRef = databaseRef(database, `deliveryWaits/${providerId}`);
-    // const snapshot = await get(deliveryWaitsRef);
-    // return snapshot;
   }
 
   useEffect(() => {
@@ -45,17 +44,6 @@ const OrderManagementPage = () => {
       } catch (error) {
         alert('상품 상세정보를 가져오는 도중 문제가 발생했습니다.: ' + error.message);
       }
-      // try {
-      //   const snapshot = await getDeliveryWaits(id);
-      //   if (snapshot.exists()) {
-      //     const ordersData = snapshot.val();
-      //     setOrders(ordersData)
-      //   } else {
-      //     alert('Id에 해당하는 상품이 존재하지 않습니다.');
-      //   }
-      // } catch (error) {
-      //   alert('상품 상세정보를 가져오는 도중 문제가 발생했습니다.: ' + error.message);
-      // }
     };
     fetchDeliveryWaitData();
   }, [id]);
