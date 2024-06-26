@@ -15,7 +15,9 @@ const MyQuestionListPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:4001/userQuestions/${id}`);
+        const response = await axios.get(`http://localhost:4000/userQuestions/${id}`, {
+          withCredentials: true,
+        });
         const data = response.data;
         const questions = Object.keys(data).map((key) => ({ id: key, ...data[key] }));
         questions.sort((a, b) => b.registerTime - a.registerTime);

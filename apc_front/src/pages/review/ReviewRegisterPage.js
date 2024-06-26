@@ -31,7 +31,9 @@ function ReviewRegisterPage() {
   useEffect(() => {
     const fetchProductInfo = async () => {
       try {
-        const response = await axios.get(`http://localhost:4002/products/${productId}`);
+        const response = await axios.get(`http://localhost:4000/products/${productId}`, {
+          withCredentials: true,
+        });
         const productData = response.data;
         setProductInfo({
           id : productId,
@@ -53,11 +55,13 @@ function ReviewRegisterPage() {
       content
     };
     try {
-      await axios.post('http://localhost:4002/reviews', {
+      await axios.post('http://localhost:4000/reviews', {
         userId: id,
         productId,
         orderId,
         reviewData
+      }, {
+        withCredentials: true,
       });
       navigate(`/review/ableList`);
     } catch(error) {

@@ -20,7 +20,9 @@ export default function MyPage() {
   useEffect(() => {
     const findUserById = async (id) => {
       try {
-        const response = await axios.get(`http://localhost:4004/user/${id}`);
+        const response = await axios.get(`http://localhost:4000/user/${id}`, {
+          withCredentials: true,
+        });
         const userData = response.data;
         if (userData.role === 0) {
           setUserInfo(prevUserInfo => ({
@@ -65,7 +67,7 @@ export default function MyPage() {
   const handleSubmitAccountInfo = async () => {
     if (newPassword === confirmPassword) {
       try {
-        const response = await axios.post(`http://localhost:4004/user/${id}/password`, {
+        const response = await axios.post(`http://localhost:4000/user/${id}/password`, {
           currentPassword,
           newPassword
         }, {
