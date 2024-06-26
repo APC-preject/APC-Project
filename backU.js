@@ -1,6 +1,6 @@
 const express = require('express');
-const cors = require('cors');
 const admin = require('firebase-admin');
+const cors = require('cors');
 const adminKey = require('./unity-apc-firebase-adminsdk.json');
 
 admin.initializeApp({
@@ -10,97 +10,44 @@ admin.initializeApp({
 
 const db = admin.database();
 const app = express();
-const port = 4003;
-
-app.use(cors());
+const PORT = 4004;
 app.use(express.json());
+app.use(cors());
 
-// 사용자 정보 가져오기
-app.get('/users/:userId', async (req, res) => {
-    const userId = req.params.userId;
-    const ref = db.ref(`users/${userId}`);
-    try {
-      const snapshot = await ref.once('value');
-      if(snapshot.exists()) {
-        res.status(200).send(snapshot.val());
-      } else {
-        res.status(404).send('No data available');
-      }
-    } catch(error) {
-      res.status(500).send(error.message);
+// 사용자 정보 받기(내 정보 페이지)
+app.get('/user/:id', async (req, res) => {
+  const userId = req.params.id;
+  const userRef = db.ref(`users/${userId}`);
+  userRef.once('value', snapshot => {
+    if (snapshot.exists()) {
+      res.json(snapshot.val());
+    } else {
+      res.status(404).send('User not found');
     }
+  }, error => {
+    res.status(500).send('Error getting user data:', error);
   });
+});
+
+// 비밀번호 변경
+app.post('/user/:id/password', async (req, res) => {
+  const userId = req.params.id;
+  const { currentPassword, newPassword } = req.body;
   
-  // 비밀번호 변경
-  app.post('/users/:userId/password', async (req, res) => {
-    const { currentPwd, newPwd } = req.body;
-    const userI = req.params.userId;
-    const ref = db.ref(`users/${userId}`);
-    try { 
-        const snapshot = await ref.once('value');
-        if (snapshot.exists()) {
-            const userData = snapshot.val();
-            if (userData.password === currentPwd) {
-                await db.ref(`users/${userId}/password`).set(newPwd);
-                res.status(200).send('Password updated successfully');
-            } else {
-                res.status(400).send('Current password does not match');
-            }
-        } else {
-            res.status(404).send('No data available');
-        }
-    } catch (error) {
-        res.status(500).send(error.message);
+  const userRef = db.ref(`users/${userId}`);
+  userRef.child('password').once('value', async (snapshot) => {
+    const storedPassword = snapshot.val();
+    if (storedPassword === currentPassword) {
+      await userRef.child('password').set(newPassword);
+      res.send('Password updated successfully');
+    } else {
+      res.status(400).send('Current password does not match');
     }
+  }, error => {
+    res.status(500).send('Error updating password:', error);
   });
+});
 
-// 회원 가입
-app.post('/register', async (req, res) => {
-    const { email, name, password, role, apcID } = req.body;
-    const id = email.replace(".", "_");
-    let userData = {
-      email,
-      name,
-      password,
-      uid: id,
-      role: role || 0
-    };
-    if (role === 1) {
-      userData.apcID = apcID;
-      userData.online = 0;
-    }
-    try {
-      const updates = {};
-      updates[`users/${id}`] = userData;
-      await db.ref().update(updates);
-      res.status(201).send('User registered successfully');
-    } catch (error) {
-      res.status(500).send(error.message);
-    }
-  });
-  
-  // 로그인
-  app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    const userId = email.replace(".", "_");
-    const ref = db.ref(`users/${userId}`);
-    try {
-      const snapshot = await ref.once('value');
-      if(snapshot.exists()) {
-        const userData = snapshot.val();
-        if (userData.password === password) {
-          res.status(200).send({ id: userId, role: userData.role });
-        } else {
-          res.status(400).send('Invalid password');
-        }
-      } else {
-        res.status(404).send('No data available');
-      }
-    } catch(error) {
-      res.status(500).send(error.message);
-    }
-  });
-
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
