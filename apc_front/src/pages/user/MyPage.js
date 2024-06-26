@@ -68,6 +68,8 @@ export default function MyPage() {
         const response = await axios.post(`http://localhost:4004/user/${id}/password`, {
           currentPassword,
           newPassword
+        }, {
+          withCredentials: true
         });
         alert('비밀번호 변경 완료');
       } catch (error) {
