@@ -32,37 +32,29 @@ export default function RegisterPage() { //Todo: APC관리자, 일반회원 버�
     }
   
     try {
-      // Firebase Authentication 회원가입
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // 회원가입 성공 시 처리
-      const user = userCredential.user;
-      const id = email.replace(".", "_");
-      let userData = {
-        email,
-        name,
-        password,
-        uid: user.uid,
+      const userData = {
+        email: email,
+        name: name,
+        password: password,
         role : 0
       };
-  
+    
       // 판매자인 경우 apcId와 online 여부 항목 추가
       if (isProducer) {
-        userData = {
-          email,
-          name,
-          password,
-          uid: user.uid,
-          role : 1,
-          apcID,
-          online
-        };
+        userData['role'] = 1;
+        userData['apcID'] = apcID;
+        userData['online'] = 0;
       }
-      // Firebase Realtime Database에 사용자 데이터 저장
-      const updates = {};
-      updates[`users/${id}`] = userData;
-  
-      await update(databaseRef(database), updates);
+      const response = await fetch('http://localhost:4000/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
+      });
+      if (!response.ok) {
+        throw new Error('회원가입 실패'); ///// 에러처리
+      }
       alert('회원가입이 완료되었습니다.');
       handleClickMain();
     } catch (error) {
