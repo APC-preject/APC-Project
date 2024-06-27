@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
-import { databaseRef, getDatabase, get } from '../../firebase/FirebaseInstance';
 
 const OrderedListPage = () => {
   const { user } = useAuthStore();
@@ -13,7 +12,7 @@ const OrderedListPage = () => {
 
   async function getOrderInfo(id) {
     try {
-      const response = await fetch(`http://localhost:4000/orders/${id}`, {
+      const response = await fetch(`http://localhost:14000/orders/${id}`, {
         credentials: 'include',
       });
       if (!response.ok) {

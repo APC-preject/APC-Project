@@ -45,7 +45,7 @@ const ProductDetailPage = () => {
   // 제품 정보 조회 함수
   async function getProductInfo(productId) {
     try {
-      const response = await fetch(`http://localhost:4000/products/${productId}`, {
+      const response = await fetch(`http://localhost:14000/products/${productId}`, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -62,7 +62,7 @@ const ProductDetailPage = () => {
   // 제품 리뷰 목록 조회 함수
   async function getReviewList() {
     try {
-      const response = await fetch(`http://localhost:4000/reviews/${productId}`, {
+      const response = await fetch(`http://localhost:14000/reviews/${productId}`, {
         credentials: 'include',
       });
       if (!response.ok && response.status !== 404) {
@@ -187,7 +187,7 @@ const ProductDetailPage = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/orders`, {
+      const response = await fetch(`http://localhost:14000/orders`, {
         method: 'POST',
         body: JSON.stringify(send_data),
         headers: {

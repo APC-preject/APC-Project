@@ -59,7 +59,7 @@ function ProductRegisterPage() {
 
     const uploadDB = async (product_data) => {
       try {
-        const response = await fetch(`http://localhost:4000/products`, {
+        const response = await fetch(`http://localhost:14000/products`, {
           method: 'POST',
           body: JSON.stringify({
             product_data: product_data
@@ -87,7 +87,7 @@ function ProductRegisterPage() {
         formData.append('image', imageFile);
 
         console.log(formData);
-        const response = await fetch(`http://localhost:4000/productImages/${imageFile.name}`, {
+        const response = await fetch(`http://localhost:14000/productImages/${imageFile.name}`, {
           method: 'POST',
           body: formData,
           credentials: 'include',
