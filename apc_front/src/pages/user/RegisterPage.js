@@ -2,10 +2,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
 import { useNavigate } from "react-router-dom"
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { app, getDatabase, databaseRef, update } from '../../firebase/FirebaseInstance';
-const auth = getAuth(app);
-const database = getDatabase(app);
 
 export default function RegisterPage() { //Todo: APC관리자, 일반회원 버튼 선택에 따른 등록 버튼 분리 해야함 - 
   // 회원 가입 폼 상태 관리
@@ -45,7 +41,7 @@ export default function RegisterPage() { //Todo: APC관리자, 일반회원 버�
         userData['apcID'] = apcID;
         userData['online'] = 0;
       }
-      const response = await fetch('http://localhost:4000/register', {
+      const response = await fetch('http://localhost:14000/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

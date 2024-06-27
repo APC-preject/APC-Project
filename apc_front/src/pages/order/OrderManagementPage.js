@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useUserStore } from '../../store/UserStore';
-import { databaseRef, getDatabase, get } from '../../firebase/FirebaseInstance';
 import { useAuthStore } from '../../store/AuthStore';
 
 const OrderManagementPage = () => {
@@ -18,7 +17,7 @@ const OrderManagementPage = () => {
   // 배송 대기 목록 조회 함수
   async function getDeliveryWaits(providerId) {
     try {
-      const response = await fetch(`http://localhost:4000/deliveryWaits/${providerId}`, {
+      const response = await fetch(`http://localhost:14000/deliveryWaits/${providerId}`, {
         credentials: 'include',
       });
       if (!response.ok) {

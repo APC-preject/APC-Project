@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import ReactPaginate from 'react-paginate';
 import BasicLayout from '../../layout/BasicLayout';
 import { useNavigate } from 'react-router-dom'; // useNavigate 추가
-import { getDatabase, databaseRef, get } from '../../firebase/FirebaseInstance'
 
   const ProductList = () => {
   
@@ -16,7 +15,7 @@ import { getDatabase, databaseRef, get } from '../../firebase/FirebaseInstance'
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:4000/products', {
+        const response = await fetch('http://localhost:14000/products', {
           credentials: 'include',
         });
         if (!response.ok) {
