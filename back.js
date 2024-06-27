@@ -7,7 +7,8 @@ const axios = require('axios');
 const dotenv = require('dotenv');
 const { getAuth } = require('firebase-admin/auth');
 const cookieParser = require('cookie-parser');
-dotenv.config({path: './secrets/.env'});
+
+dotenv.config({path: './secrets/.env'}); // .env 파일에서 환경변수 로드
 
 const {
   API_KEY,
@@ -15,28 +16,30 @@ const {
   HOST,
   FRONT_ORIGIN_URL,
   NODE_ENV
-} = process.env;
+} = process.env; // 환경변수 가져오기
 
 admin.initializeApp({
   credential: admin.credential.cert(adminKey),
   databaseURL: 'https://unity-apc-default-rtdb.firebaseio.com/'
-});
+}); // firebase admin 초기화
 
-const db = admin.database();
-const app = express();
+const db = admin.database(); // firebase database 초기화
+const app = express(); // express 서버 생성
 
 const corsOptions = {
   origin: FRONT_ORIGIN_URL, // 클라이언트 도메인
   credentials: true
-};
+}; // cors 옵션
 
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cors(corsOptions)); // cors 미들웨어
+app.use(express.json()); // json 파싱 미들웨어
+app.use(express.urlencoded({ extended: true })); // urlencoded 파싱 미들웨어
+app.use(cookieParser()); // 쿠키 파싱 미들웨어
 
+// 로그인 요청 처리
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
+  // firebase rest api를 이용한 로그인
   const FIREBASE_AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`;
   
   try {
@@ -44,64 +47,66 @@ app.post('/login', async (req, res) => {
       email,
       password,
       returnSecureToken: true
-    });
+    }); // firebase auth 서버에 로그인 요청
     if (response.data.error) {
       throw new Error('Invalid email or password');
-    }
-    const idToken = response.data.idToken;
+    } // 로그인 실패 시 에러 발생
 
-    res.cookie('idToken', idToken, {
-      httpOnly: true,
+    const idToken = response.data.idToken; // idToken 추출
+
+    res.cookie('idToken', idToken, { // 쿠키로 idToken 전송
+      httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
       secure: NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
       // maxAge: response.data.expiresIn * 1000 // session cookie로 만들어 탭 닫으면 쿠키 삭제
     });
 
     const userId = email.replace(".", "_");
-    const snapshot = await db.ref(`users/${userId}/role`).get();
-    if (snapshot.exists()) {
+    const snapshot = await db.ref(`users/${userId}/role`).get(); // db에서 유저의 role 가져오기
+    if (snapshot.exists()) { // 유저 정보가 있을 시
       const loggedInUserRole = snapshot.val();
       res.status(200).json({ 
         userId: userId, 
         loggedInUserRole: loggedInUserRole
-      });
+      }); // role과 userId 전송(로그인 성공)
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' }); // 유저 정보 없을 시 에러
     }
   } catch (error) {
-    console.log(error);
-    res.status(401).json({ message: 'Invalid email or password' });
+    res.status(401).json({ message: 'Invalid email or password' }); // 로그인 실패 시 에러
   }
 });
 
+// 로그아웃 요청 처리
 app.post('/logout', (req, res) => {
   res.clearCookie('idToken'); // 쿠키 삭제
   res.status(200).json({ message: 'Logged out' });
 });
 
+// 회원가입 요청 처리
 app.post('/register', async (req, res) => {
   const { 
-    email, password, name, role, apcID, online
-  } = req.body;
+    email, password, name, role, apcID
+  } = req.body; // 요청 바디에서 이메일, 비밀번호, 이름, role, apcID 추출
+  // firebase rest api를 이용한 회원가입
   const FIREBASE_AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`;
   try {
     const response = await axios.post(FIREBASE_AUTH_URL, {
       email,
       password,
       returnSecureToken: true
-    });
-    if (response.data.error) {
+    }); // firebase auth 서버에 회원가입 요청
+    if (response.data.error) { // 회원가입 실패 시 에러 발생
       throw new Error('Register failed');
     }
-    const uid = response.data.localId;
+    const uid = response.data.localId; // uid 추출
     const userData = {
       email: email,
       name: name,
       password: password,
       uid: uid,
       role : role
-    };
-    // 판매자인 경우 apcId와 online 여부 항목 추가
-    if (role === 1) {
+    }; // 유저 데이터 생성
+    if (role === 1) { // 판매자인 경우 apcId와 online 여부 항목 추가
       userData['apcID'] = apcID;
       userData['online'] = 0;
     }
@@ -110,30 +115,32 @@ app.post('/register', async (req, res) => {
     const userRef = db.ref();
     const updates = {};
     updates[`users/${userId}`] = userData;
-    await userRef.update(updates);
+    await userRef.update(updates); // db에 유저 데이터 저장
 
     res.status(200).json({ message: '회원가입 성공' });
-  } catch (error) {
+  } catch (error) { // 회원가입 실패 시 에러 처리
     console.error('Error creating user: ', error);
     res.status(500).json({ message: '회원가입 실패', error });
   }
 });
 
+// 토큰 검증 미들웨어
 app.use(async (req, res, next) => {
-  const idToken = req.cookies?.idToken;
-  if (!idToken) {
+  const idToken = req.cookies?.idToken; // 쿠키에서 idToken 추출
+  if (!idToken) { // idToken이 없을 시 에러(미인증)
     return res.status(401).json({ message: 'Unauthorized' });
   }
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    req.userEmail = decodedToken.email?.replace(".", "_");
+    const decodedToken = await admin.auth().verifyIdToken(idToken); // idToken 검증
+    req.userEmail = decodedToken.email?.replace(".", "_"); // 토근에서 이메일 추출
     console.log(req.userEmail);
-    next();
+    next(); // 다음 미들웨어(라우터)로 이동
   } catch (error) {
     res.status(401).json({ message: 'Unauthorized' });
   }
 });
 
+// 사용자 정보 가져오기(내 정보 페이지)
 app.get('/orders/:id', async (req, res) => {
   const { id } = req.params;
   const orderRef = db.ref(`orders/${id}`);
