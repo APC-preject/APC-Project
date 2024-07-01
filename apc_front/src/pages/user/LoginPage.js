@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useUserStore } from '../../store/UserStore';
 import { useAuthStore } from '../../store/AuthStore';
 import BasicLayout from '../../layout/BasicLayout';
-
+const { REACT_APP_NGROK_URL } = process.env;
 
 export default function LoginPage() {
   const { setUserData } = useUserStore()
@@ -47,7 +47,7 @@ export default function LoginPage() {
   
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://localhost:14000/login', {
+      const response = await fetch(REACT_APP_NGROK_URL + '/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

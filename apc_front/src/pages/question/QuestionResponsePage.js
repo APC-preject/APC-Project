@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import axios from 'axios';
-
+const { REACT_APP_NGROK_URL } = process.env;
 const QuestionResponsePage = () => {
   const navigate = useNavigate();
   const [queryParams] = useSearchParams();
@@ -13,7 +13,7 @@ const QuestionResponsePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:14000/questions/${questionId}`, {
+        const response = await axios.get(REACT_APP_NGROK_URL + `/questions/${questionId}`, {
           withCredentials: true,
         });
         setQuestion(response.data);
@@ -31,7 +31,7 @@ const QuestionResponsePage = () => {
 
   const handleSubmitResponse = async () => {
     try {
-      await axios.post(`http://localhost:14000/questions/${questionId}/response`, { response }, {
+      await axios.post(REACT_APP_NGROK_URL + `/questions/${questionId}/response`, { response }, {
         withCredentials: true,
       });
       alert('답변이 성공적으로 제출되었습니다.');

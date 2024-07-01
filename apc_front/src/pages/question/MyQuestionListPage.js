@@ -4,7 +4,7 @@ import ReactPaginate from 'react-paginate';
 import BasicLayout from '../../layout/BasicLayout';
 import axios from 'axios';
 import { useUserStore } from '../../store/UserStore';
-
+const { REACT_APP_NGROK_URL } = process.env;
 const MyQuestionListPage = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const questionsPerPage = 10;
@@ -15,7 +15,7 @@ const MyQuestionListPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:14000/userQuestions/${id}`, {
+        const response = await axios.get(REACT_APP_NGROK_URL + `/userQuestions/${id}`, {
           withCredentials: true,
         });
         const data = response.data;

@@ -3,6 +3,8 @@ import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
 
+const { REACT_APP_NGROK_URL } = process.env;
+
 const DeliveryListPage = () => {
 
   const { user } = useAuthStore()
@@ -11,7 +13,7 @@ const DeliveryListPage = () => {
 
   async function getOrderInfo() {
     try {
-      const response = await fetch(`http://localhost:14000/orders/${id}`, {
+      const response = await fetch(REACT_APP_NGROK_URL + `/orders/${id}`, {
         credentials: 'include',
       });
       if (!response.ok) {

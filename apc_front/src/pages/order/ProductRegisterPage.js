@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
-
+const { REACT_APP_NGROK_URL } = process.env;
 
 function ProductRegisterPage() {
   const { user } = useAuthStore();
@@ -59,7 +59,7 @@ function ProductRegisterPage() {
 
     const uploadDB = async (product_data) => {
       try {
-        const response = await fetch(`http://localhost:14000/products`, {
+        const response = await fetch(REACT_APP_NGROK_URL + `/products`, {
           method: 'POST',
           body: JSON.stringify({
             product_data: product_data
@@ -87,7 +87,7 @@ function ProductRegisterPage() {
         formData.append('image', imageFile);
 
         console.log(formData);
-        const response = await fetch(`http://localhost:14000/productImages/${imageFile.name}`, {
+        const response = await fetch(REACT_APP_NGROK_URL + `/productImages/${imageFile.name}`, {
           method: 'POST',
           body: formData,
           credentials: 'include',
