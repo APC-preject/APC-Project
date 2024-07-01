@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-
+const { REACT_APP_NGROK_URL } = process.env;
 const QuestionPage = () => {
   const { user } = useAuthStore();
   const { id, replaceId } = useUserStore();
@@ -45,7 +45,7 @@ const QuestionPage = () => {
         content,
         questionDate
       };
-      await axios.post('http://localhost:14000/questions', { userId: id, questionData }, {
+      await axios.post(REACT_APP_NGROK_URL + '/questions', { userId: id, questionData }, {
         withCredentials: true,
       });
       alert('문의가 등록되었습니다.');

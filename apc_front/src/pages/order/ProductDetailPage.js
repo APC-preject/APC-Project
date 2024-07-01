@@ -4,7 +4,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../store/UserStore';
 import { useAuthStore } from '../../store/AuthStore';
 import MessageModal from '../../modal/MessageModal';
-
+const { REACT_APP_NGROK_URL } = process.env;
 const ProductDetailPage = () => {
   const [queryParams] = useSearchParams();
   const productId = queryParams.get('id');
@@ -45,7 +45,7 @@ const ProductDetailPage = () => {
   // 제품 정보 조회 함수
   async function getProductInfo(productId) {
     try {
-      const response = await fetch(`http://localhost:14000/products/${productId}`, {
+      const response = await fetch(REACT_APP_NGROK_URL + `/products/${productId}`, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -62,7 +62,7 @@ const ProductDetailPage = () => {
   // 제품 리뷰 목록 조회 함수
   async function getReviewList() {
     try {
-      const response = await fetch(`http://localhost:14000/reviews/${productId}`, {
+      const response = await fetch(REACT_APP_NGROK_URL + `/reviews/${productId}`, {
         credentials: 'include',
       });
       if (!response.ok && response.status !== 404) {
@@ -187,7 +187,7 @@ const ProductDetailPage = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:14000/orders`, {
+      const response = await fetch(REACT_APP_NGROK_URL + `/orders`, {
         method: 'POST',
         body: JSON.stringify(send_data),
         headers: {
@@ -327,7 +327,7 @@ const ProductDetailPage = () => {
               </div>
               <div>
                 <span className='text-button2'> {review.userID} </span>
-                <span className='text-listbg'> : {review.content} </span>: 
+                <span className='text-listbg'> : {review.content} </span>
               </div>
             </li>
           ))}

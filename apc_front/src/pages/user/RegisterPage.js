@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import Navbar from '../../components/Navbar';
 import { useNavigate } from "react-router-dom"
-
+const { REACT_APP_NGROK_URL } = process.env;
 export default function RegisterPage() { //Todo: APC관리자, 일반회원 버튼 선택에 따른 등록 버튼 분리 해야함 - 
   // 회원 가입 폼 상태 관리
   const [isProducer, setIsProducer] = useState(false);
@@ -41,7 +41,7 @@ export default function RegisterPage() { //Todo: APC관리자, 일반회원 버�
         userData['apcID'] = apcID;
         userData['online'] = 0;
       }
-      const response = await fetch('http://localhost:14000/register', {
+      const response = await fetch(REACT_APP_NGROK_URL + '/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

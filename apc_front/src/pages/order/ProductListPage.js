@@ -3,6 +3,8 @@ import ReactPaginate from 'react-paginate';
 import BasicLayout from '../../layout/BasicLayout';
 import { useNavigate } from 'react-router-dom'; // useNavigate 추가
 
+const { REACT_APP_NGROK_URL } = process.env;
+
   const ProductList = () => {
   
     
@@ -15,7 +17,7 @@ import { useNavigate } from 'react-router-dom'; // useNavigate 추가
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:14000/products', {
+        const response = await fetch(REACT_APP_NGROK_URL + '/products', {
           credentials: 'include',
         });
         if (!response.ok) {

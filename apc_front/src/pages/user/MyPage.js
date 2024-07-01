@@ -4,7 +4,7 @@ import Navbar from '../../components/Navbar';
 import { useUserStore } from '../../store/UserStore';
 import { useAuthStore } from '../../store/AuthStore';
 import axios from 'axios';
-
+const { REACT_APP_NGROK_URL } = process.env;
 export default function MyPage() {
   const [isProducer, setIsProducer] = useState(false);
   const { user } = useAuthStore();
@@ -20,7 +20,7 @@ export default function MyPage() {
   useEffect(() => {
     const findUserById = async (id) => {
       try {
-        const response = await axios.get(`http://localhost:14000/user/${id}`, {
+        const response = await axios.get(REACT_APP_NGROK_URL + `/user/${id}`, {
           withCredentials: true,
         });
         const userData = response.data;
@@ -67,7 +67,7 @@ export default function MyPage() {
   const handleSubmitAccountInfo = async () => {
     if (newPassword === confirmPassword) {
       try {
-        const response = await axios.post(`http://localhost:14000/user/${id}/password`, {
+        const response = await axios.post(REACT_APP_NGROK_URL + `/user/${id}/password`, {
           currentPassword,
           newPassword
         }, {
