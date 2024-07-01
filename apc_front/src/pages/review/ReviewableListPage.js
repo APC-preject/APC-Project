@@ -4,7 +4,7 @@ import BasicLayout from '../../layout/BasicLayout';
 import axios from 'axios';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
-
+const { REACT_APP_NGROK_URL } = process.env;
 
 function ReviewableListPage() {
   const { user } = useAuthStore();
@@ -18,7 +18,7 @@ function ReviewableListPage() {
         return
       }
       try {
-        const response = await axios.get(`http://localhost:14000/orders/${id}`, {
+        const response = await axios.get(REACT_APP_NGROK_URL + `/orders/${id}`, {
           withCredentials: true,
         });
         const data = response.data;

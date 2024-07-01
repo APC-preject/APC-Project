@@ -4,6 +4,8 @@ import BasicLayout from '../../layout/BasicLayout';
 import { useUserStore } from '../../store/UserStore';
 import { useAuthStore } from '../../store/AuthStore';
 
+const { REACT_APP_NGROK_URL } = process.env;
+
 const OrderManagementPage = () => {
   const [orders, setOrders] = useState([]);
   const { id, role, replaceId } = useUserStore();
@@ -17,7 +19,7 @@ const OrderManagementPage = () => {
   // 배송 대기 목록 조회 함수
   async function getDeliveryWaits(providerId) {
     try {
-      const response = await fetch(`http://localhost:14000/deliveryWaits/${providerId}`, {
+      const response = await fetch(REACT_APP_NGROK_URL + `/deliveryWaits/${providerId}`, {
         credentials: 'include',
       });
       if (!response.ok) {

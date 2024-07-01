@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useUserStore } from '../../store/UserStore';
-
+const { REACT_APP_NGROK_URL } = process.env;
 const OrderManagementDetailPage = () => {
   const {id} = useUserStore();
   const [queryParams] = useSearchParams();
@@ -33,7 +33,7 @@ const OrderManagementDetailPage = () => {
         alert('운송장 번호를 입력해주십시오')
         return
       }
-      const response = await fetch(`http://localhost:14000/ordersGo/${id}/${orderId}`, {
+      const response = await fetch(REACT_APP_NGROK_URL + `/ordersGo/${id}/${orderId}`, {
         method: 'POST',
         body: JSON.stringify({ 
           trackingNumber: trackingNumber,
@@ -59,7 +59,7 @@ const OrderManagementDetailPage = () => {
   //배송 도착 처리
   const handleArrivalDelivery = async() => {
     try {
-      const response = await fetch(`http://localhost:14000/ordersArrive/${id}/${orderId}`, {
+      const response = await fetch(REACT_APP_NGROK_URL + `/ordersArrive/${id}/${orderId}`, {
         method: 'POST',
         body: JSON.stringify({
           productId: orderInfo.productId,
@@ -90,7 +90,7 @@ const OrderManagementDetailPage = () => {
   //배송 출발 상태 조회 함수
   async function getOrderInfo() {
     try {
-      const response = await fetch(`http://localhost:14000/orders/${userId}/${orderId}`, {
+      const response = await fetch(REACT_APP_NGROK_URL + `/orders/${userId}/${orderId}`, {
         credentials: 'include',
       });
       if (!response.ok) {

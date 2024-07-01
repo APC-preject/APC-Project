@@ -4,7 +4,7 @@ import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
 import axios from 'axios';
 import { useUserStore } from '../../store/UserStore';
-
+const { REACT_APP_NGROK_URL } = process.env;
 function ReviewRegisterPage() {
   const { user } = useAuthStore();
   const { id } = useUserStore();
@@ -31,7 +31,7 @@ function ReviewRegisterPage() {
   useEffect(() => {
     const fetchProductInfo = async () => {
       try {
-        const response = await axios.get(`http://localhost:14000/products/${productId}`, {
+        const response = await axios.get(REACT_APP_NGROK_URL + `/products/${productId}`, {
           withCredentials: true,
         });
         const productData = response.data;
@@ -55,7 +55,7 @@ function ReviewRegisterPage() {
       content
     };
     try {
-      await axios.post('http://localhost:14000/reviews', {
+      await axios.post(REACT_APP_NGROK_URL + '/reviews', {
         userId: id,
         productId,
         orderId,

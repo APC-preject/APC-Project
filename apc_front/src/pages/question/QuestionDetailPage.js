@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import axios from 'axios';
 import { useUserStore } from '../../store/UserStore';
-
+const { REACT_APP_NGROK_URL } = process.env;
 const QuestionDetailPage = () => {
   const navigate = useNavigate();
   const [queryParams] = useSearchParams();
@@ -14,7 +14,7 @@ const QuestionDetailPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:14000/questions/${questionId}`, {
+        const response = await axios.get(REACT_APP_NGROK_URL + `/questions/${questionId}`, {
           withCredentials: true,
         });
         setQuestion(response.data);

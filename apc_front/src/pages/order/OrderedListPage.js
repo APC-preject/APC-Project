@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
-
+const { REACT_APP_NGROK_URL } = process.env;
 const OrderedListPage = () => {
   const { user } = useAuthStore();
   const { id, replaceId } = useUserStore();
@@ -12,7 +12,7 @@ const OrderedListPage = () => {
 
   async function getOrderInfo(id) {
     try {
-      const response = await fetch(`http://localhost:14000/orders/${id}`, {
+      const response = await fetch(REACT_APP_NGROK_URL + `/orders/${id}`, {
         credentials: 'include',
       });
       if (!response.ok) {
