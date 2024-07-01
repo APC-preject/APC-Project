@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 # NGROK_URL parameter is required
-include ./secrets/.env
+include ./apc_server/secrets/.env
 
 KILL=kill -9
 KILLALL=killall -9
@@ -34,8 +34,8 @@ frontUp:
 	&& export REACT_APP_NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
 
 backUp:
-	@export NGROK_URL=$(NGROK_URL) \
-	&& nohup $(NPM) start &
+	cd ./apc_server \
+	&& export NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
 
 clearAll:
 	@echo "Down nginx..."
