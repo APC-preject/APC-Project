@@ -52,6 +52,13 @@ app.use(express.json()); // json 파싱 미들웨어
 app.use(express.urlencoded({ extended: true })); // urlencoded 파싱 미들웨어
 app.use(cookieParser()); // 쿠키 파싱 미들웨어
 
+const cookieOptions = {
+  httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
+  secure: true, // NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
+  // maxAge: response.data.expiresIn * 1000 // session cookie로 만들어 탭 닫으면 쿠키 삭제
+  sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
+};
+
 // 로그인 요청 처리
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -70,12 +77,7 @@ app.post('/login', async (req, res) => {
 
     const idToken = response.data.idToken; // idToken 추출
 
-    res.cookie('idToken', idToken, { // 쿠키로 idToken 전송
-      httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
-      secure: true, // NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
-      // maxAge: response.data.expiresIn * 1000 // session cookie로 만들어 탭 닫으면 쿠키 삭제
-      sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
-    });
+    res.cookie('idToken', idToken, cookieOptions); // 쿠키로 idToken 전송(로그인 성공)
 
     const userId = email.replace(".", "_");
     const snapshot = await db.ref(`users/${userId}/role`).get(); // db에서 유저의 role 가져오기
@@ -550,12 +552,8 @@ app.post('/user/:id/password', async (req, res) => {
     }
     const newidToken = response.data.idToken; // 새로운 idToken 추출
 
-    res.cookie('idToken', newidToken, { // 쿠키로 새로운 idToken 전송
-      httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
-      secure: true, // NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
-      // maxAge: response.data.expiresIn * 1000 // session cookie로 만들어 탭 닫으면 쿠키 삭제
-      sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
-    });
+    res.cookie('idToken', newidToken, cookieOptions); // 쿠키로 새로운 idToken 전송(비밀번호 변경 성공)
+
   } catch (error) { // 비밀번호 변경 실패 시
     console.log('Error updating password:');
     res.status(500).send('Error updating password');
