@@ -26,7 +26,7 @@ async function makeOrder(req, res) {
 
             const orderID = newOrderRef.key; // 주문 ID 생성
 
-            const nowDate = new Date().toLocaleString('ko-KR', {
+            const nowDate = new Date().toLocaleString('ko-KR', { // 현재 시간 생성
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -65,14 +65,14 @@ async function makeOrder(req, res) {
 
 async function deliveryStart(req, res) {
     const { id, orderid } = req.params; // id, orderid 파라미터 추출
-    const { trackingNumber, productId, userId } = req.body;
+    const { trackingNumber, productId, userId } = req.body; // body에서 trackingNumber, productId, userId 추출
     const orderRef = db.ref(); // DB root 레퍼런스
     try {
         if (!trackingNumber || trackingNumber === '') { // 운송장 번호가 없을 시
             res.status(400).json({ message: 'Tracking number is required' });
             return;
         }
-        const departedDate = new Date().toLocaleString('ko-KR', {
+        const departedDate = new Date().toLocaleString('ko-KR', { // 출발일 생성(현재 시간)
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -100,7 +100,7 @@ async function deliveryComplete(req, res) {
     const { productId, userId } = req.body; // body에서 productId, userId 추출
     const orderRef = db.ref(); // DB root 레퍼런스
     try {
-        const arrivedDate = new Date().toLocaleString('ko-KR', {
+        const arrivedDate = new Date().toLocaleString('ko-KR', { // 도착일 생성(현재 시간)
             year: 'numeric',
             month: 'long',
             day: 'numeric',

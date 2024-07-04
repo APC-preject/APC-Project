@@ -1,5 +1,7 @@
 const express = require('express');
 const multer = require('multer');
+
+// 사진 업로드를 위한 multer 설정
 const multstorage = multer.memoryStorage(); // multer 스토리지 설정
 const upload = multer({ storage: multstorage }); // multer 업로드 설정
 

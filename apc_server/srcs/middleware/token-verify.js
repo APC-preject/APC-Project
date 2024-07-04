@@ -15,9 +15,10 @@ const {
 
 const db = firebase.db; // firebase database 초기화
 
+// 토큰 검증 미들웨어
 async function tokenVerify(req, res, next) {
     const jwtToken = req.cookies?.jwtToken; // 쿠키에서 jwtToken 추출
-    if (!jwtToken) { // idToken이 없을 시 에러(미인증)
+    if (!jwtToken) { // jwtToken이 없을 시 에러(미인증)
         return res.status(401).json({ message: 'Unauthorized' });
     }
     try {
@@ -25,14 +26,15 @@ async function tokenVerify(req, res, next) {
         req.jwtUserInfo = decodedjwt; // jwt 정보 저장
 
         const idToken = decodedjwt.idToken; // 토큰에서 idToken 추출
-        await admin.auth().verifyIdToken(idToken); // idToken 검증(firebase)
+        await admin.auth().verifyIdToken(idToken); // idToken 검증(firebase 사용)
         next(); // 다음 미들웨어(라우터)로 이동
     } catch (error) { // 검증 실패
-        if (error.name === 'TokenExpiredError' || error.code === 'auth/id-token-expired') { // jwt expire
-            ///// try refresh logic
+        if (error.name === 'TokenExpiredError' || error.code === 'auth/id-token-expired') { // jwt토큰 만료 시
+            // try refresh logic
             try {
-                const decodedjwt = jwt.decode(jwtToken);
-                const refreshToken = req.cookies?.refreshToken;
+                console.log('Token is expired. Try to refresh token.');
+                const decodedjwt = jwt.decode(jwtToken); // jwt 토큰 디코딩(검증 절차 없음)
+                const refreshToken = req.cookies?.refreshToken; // 쿠키에서 refreshToken 추출
                 if (!refreshToken) { // refreshToken이 없을 시 에러(미인증)
                     throw new Error("unauthorized");
                 }
@@ -48,8 +50,7 @@ async function tokenVerify(req, res, next) {
                 const jwtInfo = {
                     userId: decodedjwt.userId,
                     role: decodedjwt.role,
-                    idToken: response.data.idToken,
-                    // refreshToken: response.data.refreshToken
+                    idToken: response.data.idToken
                 }; // jwt에 담을 정보
 
                 const jwtToken = jwt.sign(jwtInfo, JWT_SECRET, {
@@ -58,20 +59,20 @@ async function tokenVerify(req, res, next) {
 
                 res.cookie('jwtToken', jwtToken, {
                     httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
-                    secure: true, // NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
-                    maxAge: response.data.expires_in * 1000, // session cookie로 만들어 탭 닫으면 쿠키 삭제
+                    secure: true, // HTTPS only
+                    maxAge: response.data.expires_in * 1000,
                     sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
                 }); // 쿠키로 jwtToken 전송
 
                 res.cookie('refreshToken', response.data.refreshToken, {
                     httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
-                    secure: true, // NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
+                    secure: true, // HTTPS only
                     maxAge: response.data.expires_in * 1000 * 24 * 14,
                     sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
                 });
 
                 next();
-            } catch (error) {
+            } catch (error) { // 토큰 갱신 실패
                 console.log('Token is invalid:', error);
                 res.redirect(401, '/logout');
             }

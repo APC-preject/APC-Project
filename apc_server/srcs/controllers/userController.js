@@ -45,13 +45,12 @@ async function changePasswd(req, res) {
             throw new Error('Error updating password');
         }
         const newidToken = response.data.idToken; // 새로운 idToken 추출
-        const newRefreshToken = response.data.refreshToken;
+        const newRefreshToken = response.data.refreshToken; // 새로운 refreshToken 추출
 
         const jwtInfo = {
             userId: req.jwtUserInfo.userId,
             role: req.jwtUserInfo.role,
-            idToken: newidToken,
-            // refreshToken: newRefreshToken
+            idToken: newidToken
         }; // jwt에 담을 정보
 
         const jwtToken = jwt.sign(jwtInfo, JWT_SECRET, {
@@ -66,14 +65,14 @@ async function changePasswd(req, res) {
 
                 res.cookie('jwtToken', jwtToken, {
                     httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
-                    secure: true, // NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
-                    maxAge: response.data.expiresIn * 1000, // session cookie로 만들어 탭 닫으면 쿠키 삭제
+                    secure: true, // HTTPS only
+                    maxAge: response.data.expiresIn * 1000, 
                     sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
                 }); // 쿠키로 새로운 idToken 전송(비밀번호 변경 성공)
 
                 res.cookie('refreshToken', newRefreshToken, {
                     httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
-                    secure: true, // NODE_ENV === 'production', // 프로덕션 환경에서만 secure 플래그 사용(HTTPS only)
+                    secure: true, // HTTPS only
                     maxAge: response.data.expiresIn * 1000 * 24 * 14,
                     sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
                 }); // 쿠키로 새로운 refreshToken 전송(비밀번호 변경 성공)

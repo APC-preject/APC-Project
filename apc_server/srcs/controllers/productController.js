@@ -68,35 +68,35 @@ async function storeProductImage(req, res) {
 }
 
 async function isProvideProduct(req, res) {
-    const { userId } = req.params;
-    const { productId } = req.query;
+    const { userId } = req.params; // userId 파라미터 추출
+    const { productId } = req.query; // productId 쿼리 추출
 
-    if (!productId) {
+    if (!productId) { // productId가 없을 시
         return res.status(400).json({ message: 'Product ID is required' });
     }
 
-    const userRef = db.ref(`users/${userId}/provide/${productId}`);
+    const userRef = db.ref(`users/${userId}/provide/${productId}`); // 판매자인지 확인할 레퍼런스
 
     try {
-        const snapshot = await userRef.get();
+        const snapshot = await userRef.get(); // 판매자인지 확인
         if (snapshot.exists() && snapshot.val() === true) {
-            res.status(200).json({ isProvider: true });
+            res.status(200).json({ isProvider: true }); // 판매자일 시
         } else {
-            res.status(200).json({ isProvider: false });
+            res.status(200).json({ isProvider: false }); // 판매자가 아닐 시
         }
-    } catch (error) {
+    } catch (error) { // 판매자 확인 실패 시
         res.status(500).json({ message: 'Error checking provider status', error });
     }
 }
 
 async function addProvideProduct(req, res) {
-    const { userId } = req.params;
-    const { productName } = req.body;
+    const { userId } = req.params; // userId 파라미터 추출
+    const { productName } = req.body; // body에서 productName 추출
 
-    const userRef = db.ref(`users/${userId}/provide/${productName}`);
+    const userRef = db.ref(`users/${userId}/provide/${productName}`); // 판매자 품목 추가 레퍼런스
     try {
-        await userRef.set(true);
-        res.status(200).json(productName);
+        await userRef.set(true); // 판매자 품목 추가
+        res.status(200).json({ productName });
     } catch (error) { // 상품 등록 실패 시
         res.status(500).json({ message: 'Error fetching products', error });
     }
