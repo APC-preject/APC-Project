@@ -35,7 +35,7 @@ http {
         listen       ${NGINX_PORT};
         server_name  ${NGROK_URL};
 
-        location ~ ^/(config|orders|ordersGo|ordersArrive|deliveryWaits|products|reviews|productImages|userQuestions|questions|user|login|register) {
+        location ~ ^/(api) {
            proxy_pass              http://localhost:${PORT};
            proxy_set_header        Host $host;
            proxy_set_header        X-Real-IP $remote_addr;
