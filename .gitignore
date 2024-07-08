@@ -1,6 +1,7 @@
 unity-apc-firebase-adminsdk.json
 FirebaseInstance.js
 secrets/
+APC_GARAGE_fi/
 # Logs
 logs
 *.log
