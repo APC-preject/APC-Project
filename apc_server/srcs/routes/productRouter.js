@@ -31,4 +31,8 @@ router.get('/user/:userId', handler.isProvideProduct);
 // 판매자 판매 품목 추가
 router.post('/user/:userId', handler.addProvideProduct);
 
+// 판매자 판메 품목 수정
+router.put('/:productId', handler.modifiedProduct);
+
+
 module.exports = { router };

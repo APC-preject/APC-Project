@@ -47,7 +47,7 @@ async function login(req, res) {
             res.cookie('jwtToken', jwtToken, {
                 httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
                 secure: true, // HTTPS only
-                maxAge: response.data.expiresIn * 1000,
+                maxAge: response.data.expiresIn * 1000 * 24 * 14,
                 sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
             }); // 쿠키로 jwtToken 전송
 
@@ -75,13 +75,20 @@ async function logout(req, res) {
     res.clearCookie('jwtToken'); // 쿠키 토큰 삭제
     res.clearCookie('refreshToken'); // 쿠키 토큰 삭제
     res.redirect('/user/login'); // 로그인 창으로 이동
+    return ;
 }
+
+const available_apc_token = 'espresso1234';
 
 async function register(req, res) {
     const {
-        email, password, name, role, apcID
+        email, password, name, role, apcID, apcToken
     } = req.body; // 요청 바디에서 이메일, 비밀번호, 이름, role, apcID 추출
     // firebase rest api를 이용한 회원가입
+    if (apcToken !== available_apc_token) {
+        res.status(401).json({ message: 'unavailable apcToken' });
+        return ;
+    }
     const FIREBASE_AUTH_URL = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`;
     try {
         const response = await axios.post(FIREBASE_AUTH_URL, {

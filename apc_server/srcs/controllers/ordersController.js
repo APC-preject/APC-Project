@@ -9,16 +9,19 @@ async function makeOrder(req, res) {
     try {
         const productRef = db.ref(`products/${productId}`); // 상품 정보 레퍼런스
 
-        await productRef.transaction((product) => { // 상품 정보 업데이트
+        const commited = await productRef.transaction((product) => { // 상품 정보 업데이트
             if (product) {
                 if (product.pQuantity >= quantity) { // 주문 수량이 재고 수량보다 작을 시
                     product.pQuantity -= quantity;
                 } else { // 주문 수량이 재고 수량보다 클 시
-                    throw new Error('주문 수량이 재고 수량보다 많습니다.');
+                    return;
                 }
             }
             return product;
         });
+
+        if (!commited.committed)
+            throw new Error("주문 수량 에러");
 
         try {
             // 주문 정보 db에 저장
@@ -32,7 +35,6 @@ async function makeOrder(req, res) {
                 day: 'numeric',
                 hour: 'numeric',
                 minute: 'numeric',
-                second: 'numeric',
                 hour12: false,    // 24시간 형식 사용
                 timeZone: 'Asia/Seoul'    // 한국 표준시 (KST)
             });
@@ -55,11 +57,11 @@ async function makeOrder(req, res) {
                 return product;
             });
             console.log(error);
-            res.status(500).json({ message: '주문 데이터 저장 중 문제가 발생했습니다.', error });
+            res.status(500).json({ message: '주문 데이터 저장 중 문제가 발생했습니다.' });
         }
     } catch (error) { // 상품 정보 업데이트 실패 시
         console.log(error);
-        res.status(500).json({ message: '수량 확인 및 업데이트 중 문제가 발생했습니다.', error });
+        res.status(500).json({ message: '수량 확인 및 업데이트 중 문제가 발생했습니다.' });
     }
 }
 
@@ -78,7 +80,6 @@ async function deliveryStart(req, res) {
             day: 'numeric',
             hour: 'numeric',
             minute: 'numeric',
-            second: 'numeric',
             hour12: false,    // 24시간 형식 사용
             timeZone: 'Asia/Seoul'    // 한국 표준시 (KST)
         }); // 출발일 생성
@@ -106,14 +107,13 @@ async function deliveryComplete(req, res) {
             day: 'numeric',
             hour: 'numeric',
             minute: 'numeric',
-            second: 'numeric',
             hour12: false,    // 24시간 형식 사용
             timeZone: 'Asia/Seoul'    // 한국 표준시 (KST)
         }); // 도착일 생성
         const updates = {} // 업데이트할 데이터
         updates[`orders/${userId}/${orderid}/arrivedDate`] = arrivedDate // 도착일 업데이트
         updates[`orders/${userId}/${orderid}/deliveryStatus`] = 2 // 배송 상태 업데이트
-        updates[`deliveryWaits/${id}/${productId}/${orderid}`] = null // 배송 대기 목록에서 삭제
+        updates[`deliveryWaits/${id}/${productId}/${orderid}/deliveryStatus`] = 2 // 배송 대기 상태 업데이트
         await orderRef.update(updates); // 데이터 업데이트
         res.status(200).json({ message: 'Departed' });
     } catch (error) { // 업데이트 실패 시

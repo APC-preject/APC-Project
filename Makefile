@@ -1,7 +1,6 @@
 #!/bin/bash
 SHELL := /bin/bash
 
-# NGROK_URL parameter is required
 include ./apc_server/secrets/.env
 
 KILL=kill -9
@@ -52,9 +51,9 @@ clearAll:
 	@echo "Finding process using port $(FRONT_PORT)..."
 	@PID=$$(sudo lsof -t -i:$(FRONT_PORT)); \
 	if [ -z "$$PID" ]; then \
-		echo "No backend process"; \
+		echo "No frontend process"; \
 	else \
-		echo "Killing backend process $$PID using port $(FRONT_PORT)..."; \
+		echo "Killing frontend process $$PID using port $(FRONT_PORT)..."; \
 		sudo $(KILL) $$PID; \
 		echo "Process $$PID killed."; \
 	fi

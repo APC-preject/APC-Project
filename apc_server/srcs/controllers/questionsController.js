@@ -23,6 +23,7 @@ async function registQuestion(req, res) {
     try {
         await newQuestionRef.set(questionData); // 새로운 문의 저장
         await db.ref(`userQuestions/${userId}/${newQuestionRef.key}`).set(questionData); // 유저 문의 저장
+        await db.ref(`userQuestions/${userId}/${newQuestionRef.key}/isResponse`).set(false); // 유저 문의 저장
         res.status(201).send('Question created successfully');
     } catch (error) { // 문의 저장 실패 시
         res.status(500).send(error.message);
@@ -61,11 +62,14 @@ async function getOneQuestion(req, res) {
 
 async function registResponse(req, res) {
     const questionId = req.params.questionId; // questionId 파라미터 추출
-    const { response } = req.body; // response 추출
+    const { response, userId } = req.body; // response 추출
     try {
         await db.ref(`questions/${questionId}/response`).set(response); // 문의 답변 저장
+        await db.ref(`userQuestions/${userId}/${questionId}/isResponse`).set(true); // 답변 여부 설정
         res.status(200).send('Response submitted successfully');
     } catch (error) { // 문의 답변 저장 실패 시
+        console.log(userId);
+        console.log(error);
         res.status(500).send(error.message);
     }
 }

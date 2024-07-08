@@ -20,6 +20,16 @@ async function getProductReview(req, res) {
 async function registReview(req, res) {
     const { userId, productId, orderId, reviewData } = req.body; // userId, productId, orderId, reviewData 추출
     const reviewKey = db.ref(`reviews/${productId}`).push().key; // 리뷰 키 생성
+    reviewData['registTime'] = new Date().toLocaleString('ko-KR', { // 현재 시간 생성
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false,    // 24시간 형식 사용
+        timeZone: 'Asia/Seoul'    // 한국 표준시 (KST)
+    });
+    console.log(reviewData);
     const updates = {}; // 업데이트할 데이터
     updates[`reviews/${productId}/${reviewKey}`] = reviewData; // 리뷰 정보 업데이트
     updates[`orders/${userId}/${orderId}/isReviewed`] = 1; // 리뷰 작성 여부 업데이트

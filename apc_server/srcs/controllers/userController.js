@@ -66,7 +66,7 @@ async function changePasswd(req, res) {
                 res.cookie('jwtToken', jwtToken, {
                     httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
                     secure: true, // HTTPS only
-                    maxAge: response.data.expiresIn * 1000, 
+                    maxAge: response.data.expiresIn * 1000 * 24 * 14, 
                     sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
                 }); // 쿠키로 새로운 idToken 전송(비밀번호 변경 성공)
 

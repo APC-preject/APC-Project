@@ -19,17 +19,23 @@ const db = firebase.db; // firebase database 초기화
 async function tokenVerify(req, res, next) {
     const jwtToken = req.cookies?.jwtToken; // 쿠키에서 jwtToken 추출
     if (!jwtToken) { // jwtToken이 없을 시 에러(미인증)
+        console.log('unauthorized');
         return res.status(401).json({ message: 'Unauthorized' });
     }
     try {
         const decodedjwt = jwt.verify(jwtToken, JWT_SECRET); // jwt 토큰 검증
-        req.jwtUserInfo = decodedjwt; // jwt 정보 저장
+        req.jwtUserInfo = {
+            userId: decodedjwt.userId,
+            role: decodedjwt.role
+        }; // jwt 정보 저장
 
         const idToken = decodedjwt.idToken; // 토큰에서 idToken 추출
         await admin.auth().verifyIdToken(idToken); // idToken 검증(firebase 사용)
         next(); // 다음 미들웨어(라우터)로 이동
     } catch (error) { // 검증 실패
-        if (error.name === 'TokenExpiredError' || error.code === 'auth/id-token-expired') { // jwt토큰 만료 시
+        console.log('fail');
+        console.log(error);
+        if (error.name === 'TokenExpiredError' || error.code === 'auth/id-token-expired' || error.message === 'debug/id-token-expired') { // jwt토큰 만료 시
             // try refresh logic
             try {
                 console.log('Token is expired. Try to refresh token.');
@@ -47,37 +53,43 @@ async function tokenVerify(req, res, next) {
                 if (response.data.error) {
                     throw new Error("unauthorized");
                 }
+
                 const jwtInfo = {
                     userId: decodedjwt.userId,
                     role: decodedjwt.role,
-                    idToken: response.data.idToken
+                    idToken: response.data.id_token
                 }; // jwt에 담을 정보
 
-                const jwtToken = jwt.sign(jwtInfo, JWT_SECRET, {
+                const newjwtToken = jwt.sign(jwtInfo, JWT_SECRET, {
                     expiresIn: response.data.expires_in * 1000
                 }); // jwt 토큰 생성
 
-                res.cookie('jwtToken', jwtToken, {
+                res.cookie('jwtToken', newjwtToken, {
                     httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
                     secure: true, // HTTPS only
-                    maxAge: response.data.expires_in * 1000,
+                    maxAge: response.data.expires_in * 1000 * 24 * 14,
                     sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
                 }); // 쿠키로 jwtToken 전송
 
-                res.cookie('refreshToken', response.data.refreshToken, {
+                res.cookie('refreshToken', response.data.refresh_token, {
                     httpOnly: true, // http 프로토콜로만 쿠키 접근 가능(자바스크립트로 접근 불가, 보안 강화)
                     secure: true, // HTTPS only
                     maxAge: response.data.expires_in * 1000 * 24 * 14,
                     sameSite: 'none' // sameSite가 none이면 secure가 true여야 함
                 });
 
+                req.jwtUserInfo = {
+                    userId: decodedjwt.userId,
+                    role: decodedjwt.role
+                };
+
                 next();
             } catch (error) { // 토큰 갱신 실패
-                console.log('Token is invalid:', error);
+                console.log('Token is invalid1:', error);
                 res.redirect(401, '/logout');
             }
         } else { // 유효하지 않은 토큰
-            console.log('Token is invalid:', error);
+            console.log('Token is invalid2:', error);
             res.redirect(401, '/logout');
         }
     }

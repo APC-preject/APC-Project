@@ -32,21 +32,6 @@ async function getProductInfo(req, res) {
     }
 }
 
-async function registProduct(req, res) {
-    const { product_data } = req.body; // body에서 product_data 추출
-    const productRef = db.ref(`products`); // 상품 목록 레퍼런스
-    try {
-        const result = await productRef.push(product_data); // 상품 등록
-        if (result) { // 상품 등록 성공 시
-            res.status(200).json({ key: result.key });
-        } else { // 상품 등록 실패 시
-            res.status(404).json({ message: 'product can\'t register' });
-        }
-    } catch (error) { // 상품 등록 실패 시
-        res.status(500).json({ message: 'Error fetching products', error });
-    }
-}
-
 async function storeProductImage(req, res) {
     const { name } = req.params; // name 파라미터 추출
     const image = req.file.buffer; // 이미지 데이터 추출
@@ -102,6 +87,39 @@ async function addProvideProduct(req, res) {
     }
 }
 
+async function registProduct(req, res) {
+    const { product_data } = req.body; // body에서 product_data 추출
+    const productRef = db.ref(`products`); // 상품 목록 레퍼런스
+    try {
+        const result = await productRef.push(product_data); // 상품 등록
+        if (result) { // 상품 등록 성공 시
+            res.status(200).json({ key: result.key });
+        } else { // 상품 등록 실패 시
+            res.status(404).json({ message: 'product can\'t register' });
+        }
+    } catch (error) { // 상품 등록 실패 시
+        res.status(500).json({ message: 'Error fetching products', error });
+    }
+}
+
+async function modifiedProduct(req, res) {
+    const { productId } = req.params; // productId 파라미터 추출
+    const { product_data } = req.body; // body에서 produc_data 추출
+    const productRef = db.ref(); // 상품 목록 레퍼런스
+
+    try {
+        const updates = {};
+        updates[`products/${productId}`] = product_data;
+        console.log(product_data);
+        await productRef.update(updates);
+        res.status(200).json({ message: 'complete' });
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({ message: 'product can\'t modified' });
+    }
+
+}
+
 module.exports = {
-    getProductInfo, getProductList, registProduct, storeProductImage, isProvideProduct, addProvideProduct
+    getProductInfo, getProductList, registProduct, storeProductImage, isProvideProduct, addProvideProduct, modifiedProduct
 };
