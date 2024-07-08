@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
-const { REACT_APP_NGROK_URL } = process.env;
 
 function ProductRegisterPage() {
   const { user } = useAuthStore();
@@ -14,14 +13,6 @@ function ProductRegisterPage() {
   const [description, setDescription] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const { id, role, replaceId } = useUserStore();
-  const [productData, setProductData] = useState({
-    providerName : '',
-    pName :  '',
-    pPrice : '',
-    pQuantity : '',
-    pDescription : '',
-    pImageUrl : ''
-  });
 
   const handleProductNameChange = (e) => {
     setProductName(e.target.value);
@@ -43,10 +34,29 @@ function ProductRegisterPage() {
     setImageFile(e.target.files[0]);
   };
 
+  const updateUserProductData = async (userId, productName) => {
+    try {
+      const response = await fetch(`/api/products/user/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productName: productName }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update user product data.');
+      }
+    } catch (error) {
+      console.error('Error updating user product data:', error);
+    }
+  };
+
   const handleSubmit = async () => {
-    const providerId = await replaceId(id);
-    const currentTime = new Date(); // 현재 시간
-  
+    const providerId = id;
+    const currentTime = new Date();
+
     const productData = {
       providerName: providerId,
       pName: productName,
@@ -54,12 +64,12 @@ function ProductRegisterPage() {
       pQuantity: quantity,
       pDescription: description,
       pImageUrl: '',
-      registerTime: currentTime.getTime(), // 현재 시간을 밀리초 단위로 저장
+      registerTime: currentTime.getTime(),
     };
 
     const uploadDB = async (product_data) => {
       try {
-        const response = await fetch(REACT_APP_NGROK_URL + `/products`, {
+        const response = await fetch(`/api/products`, {
           method: 'POST',
           body: JSON.stringify({
             product_data: product_data
@@ -72,22 +82,22 @@ function ProductRegisterPage() {
         if (!response.ok) {
           throw new Error('Network response error!');
         }
-        alert('데이터베이스 저장 완료');
-        console.log({ productData });
+        const { key } = await response.json();
+        alert('데이터베이스 저장 완료.');
+        await updateUserProductData(providerId, key);
+        navigate('/product/list');
       } catch (error) {
-        alert('데이터베이스 저장 실패');
+        alert('데이터베이스 저장 실패.');
         console.error('Error adding product:', error);
       }
     }
-  
+
     if (imageFile) {
       try {
-        console.log(imageFile);
         const formData = new FormData();
         formData.append('image', imageFile);
 
-        console.log(formData);
-        const response = await fetch(REACT_APP_NGROK_URL + `/productImages/${imageFile.name}`, {
+        const response = await fetch(`/api/products/image/${imageFile.name}`, {
           method: 'POST',
           body: formData,
           credentials: 'include',
@@ -98,16 +108,13 @@ function ProductRegisterPage() {
         const url = await response.json();
         productData.pImageUrl = url['url'];
         await uploadDB(productData);
-        navigate('/product/list');
       } catch (error) {
         console.error('Error getting download URL:', error);
       }
     } else {
       await uploadDB(productData);
-      navigate('/product/list');
     }
   };
- 
 
   if (!user || id == null || role != 1) {
     return (
@@ -116,7 +123,6 @@ function ProductRegisterPage() {
       </BasicLayout>
     );
   }
-  
 
   return (
     <BasicLayout>
@@ -171,15 +177,25 @@ function ProductRegisterPage() {
           </div>
           <div className="mb-4">
             <h2 className="text-xl font-semibold mb-2 text-sub">이미지 파일</h2>
-            <input
-              className="w-full px-3 py-2 text-sub border border-bor rounded-lg focus:outline-none focus:border-blue-500 bg-textbg"
-              type="file"
-              accept="image/*"
-              onChange={handleImageFileChange}
-            />
+            <div className="flex items-center">
+              <input
+                id="fileInput"
+                className="hidden"
+                type="file"
+                accept="image/*"
+                onChange={handleImageFileChange}
+              />
+              <label
+                htmlFor="fileInput"
+                className="bg-button2 hover:bg-button2Hov text-white font-semibold py-2 px-4 rounded-lg cursor-pointer"
+              >
+                파일 선택
+              </label>
+              {imageFile && <span className="ml-2 text-sub">{imageFile.name}</span>}
+            </div>
           </div>
           <button
-            className="bg-button2 hover:bg-button2Hov text-white font-semibold py-2 px-4 rounded-lg focus:outline-none"
+            className="bg-button2 hover:bg-button2Hov mt-8 text-white font-semibold py-2 px-4 rounded-lg focus:outline-none"
             onClick={handleSubmit}
           >
             등록

@@ -1,9 +1,8 @@
-import React, { useState, useCallback, useEffect} from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from "react-router-dom"
 import { useUserStore } from '../../store/UserStore';
 import { useAuthStore } from '../../store/AuthStore';
 import BasicLayout from '../../layout/BasicLayout';
-const { REACT_APP_NGROK_URL } = process.env;
 
 export default function LoginPage() {
   const { setUserData } = useUserStore()
@@ -22,12 +21,12 @@ export default function LoginPage() {
   };
 
   const handleClickMain = useCallback(() => {
-    navigate({pathname:'/'})
-  },[navigate])
+    navigate({ pathname: '/' })
+  }, [navigate])
 
   const handleClickRegister = useCallback(() => {
-    navigate({pathname:'/user/register'})
-  },[navigate])
+    navigate({ pathname: '/user/register' })
+  }, [navigate])
 
   // 엔터키 눌렀을때 로그인 버튼이 눌리도록
   const handleKeyPress = (event) => {
@@ -44,41 +43,36 @@ export default function LoginPage() {
     };
   }, [email, password]);
 
-  
+
   const handleLogin = async () => {
     try {
-      const response = await fetch(REACT_APP_NGROK_URL + '/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email, 
+          email: email,
           password: password
         }),
         credentials: 'include',
       });
       if (!response.ok) {
-        throw new Error('로그인 실패'); ///// 에러처리
+        throw new Error("");
       }
 
       const data = await response.json();
       const { userId, loggedInUserRole } = data;
-      const userData = {id:userId, role:loggedInUserRole}
+      const userData = { id: userId, role: loggedInUserRole }
       setUserData(userData); // Save user data in the store
-      setUserState(userData);
-      alert('로그인 성공');
-      console.log(userData)
-      handleClickMain(); // Redirect after successful login
-    } catch(error) {
-      alert('로그인 실패 : ' + error.code);
+      setUserState({ userData, isLoading: false });
+      alert('로그인에 성공했습니다!');
+      navigate(-1); // Redirect after successful login
+    } catch (error) {
+      alert('로그인에 실패했습니다..');
     }
   };
-  const { id, role } = useUserStore();
-  console.log(`User ID: ${id}, Role: ${role}`)
 
-  
-  
   return (
     <BasicLayout>
       <div className="flex flex-col justify-center items-center min-h-screen py-20">
@@ -109,10 +103,10 @@ export default function LoginPage() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-textbg text-sub"
             />
           </div>
-  
+
           <div className="flex flex-col space-y-2">
             <div className="flex space-x-2 mb-2">
-              <button type="button" className="flex-1 py-2 border rounded-md shadow-sm text-sm font-medium text-sub bg-button2 hover:bg-green-700 border-bor focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" 
+              <button type="button" className="flex-1 py-2 border rounded-md shadow-sm text-sm font-medium text-sub bg-button2 hover:bg-green-700 border-bor focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 onClick={handleLogin}>
                 로그인
               </button>
@@ -126,6 +120,6 @@ export default function LoginPage() {
       </div>
     </BasicLayout>
   );
-  
+
 }
 

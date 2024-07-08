@@ -4,12 +4,14 @@ import Navbar from '../../components/Navbar';
 import { useUserStore } from '../../store/UserStore';
 import { useAuthStore } from '../../store/AuthStore';
 import axios from 'axios';
-const { REACT_APP_NGROK_URL } = process.env;
+
+
 export default function MyPage() {
   const [isProducer, setIsProducer] = useState(false);
   const { user } = useAuthStore();
   const { id, replaceId } = useUserStore();
-  
+  const [isLoading, setIsLoading] = useState(true);
+
   // 사용자 정보
   const [userInfo, setUserInfo] = useState({
     userId: replaceId(id),
@@ -19,34 +21,37 @@ export default function MyPage() {
 
   useEffect(() => {
     const findUserById = async (id) => {
+      if (!id) return;
       try {
-        const response = await axios.get(REACT_APP_NGROK_URL + `/user/${id}`, {
+        const response = await axios.get(`/api/user/${id}`, {
           withCredentials: true,
         });
         const userData = response.data;
         if (userData.role === 0) {
-          setUserInfo(prevUserInfo => ({
-            ...prevUserInfo,
+          setUserInfo({
+            userId: id,
             name: userData.name,
-            accountType: '일반 사용자 계정'
-          }));
+            accountType: '소비자 계정'
+          });
         } else if (userData.role === 1) {
           setIsProducer(true);
-          setUserInfo(prevUserInfo => ({
-            ...prevUserInfo,
+          setUserInfo({
+            userId: id,
             name: userData.name,
             accountType: '판매자 계정',
             apcId: userData.apcID
-          }));
+          });
         } else {
-          setUserInfo(prevUserInfo => ({
-            ...prevUserInfo,
+          setUserInfo({
+            userId: id,
             name: userData.name,
             accountType: 'Unknown'
-          }));
+          });
         }
+        setIsLoading(false);
       } catch (error) {
         console.error('사용자 데이터 가져오는 중 오류 발생:', error);
+        setIsLoading(false);
       }
     };
 
@@ -67,13 +72,13 @@ export default function MyPage() {
   const handleSubmitAccountInfo = async () => {
     if (newPassword === confirmPassword) {
       try {
-        const response = await axios.post(REACT_APP_NGROK_URL + `/user/${id}/password`, {
+        const response = await axios.post(`/api/user/passwd/${id}`, {
           currentPassword,
           newPassword
         }, {
           withCredentials: true
         });
-        alert('비밀번호 변경 완료');
+        alert('비밀번호 변경 완료.');
       } catch (error) {
         console.error('비밀번호 변경 오류:', error.message);
         alert('비밀번호 변경 중 오류가 발생했습니다.');
@@ -96,27 +101,34 @@ export default function MyPage() {
       <Navbar />
       <Sidebar />
       <div className="pt-20 flex-grow flex justify-center items-center boarder-none">
+        {(() => {
+          if (isLoading) return (
+            <div id="loading-spinner" className="flex items-center justify-center">
+              <div className="w-16 h-16 border-4 border-gray-200 border-t-4 border-t-blue-500 rounded-full animate-spin"></div>
+            </div>
+          );
+          return (
         <div className="w-full max-w-md p-6 border rounded-lg border-bor">
           <h2 className="text-2xl font-bold mb-4 text-sub">마이페이지</h2>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-sub">유저 ID</label>
-            <p className="mt-1 text-sub">{userInfo.userId}</p>
+            <label className="block text-base font-medium text-sub border-b">유저 ID</label>
+            <p className="mt-2 text-sub">{userInfo.userId}</p>
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-sub">이름</label>
-            <p className="mt-1 text-sub">{userInfo.name}</p>
+            <label className="block text-base font-medium text-sub border-b">이름</label>
+            <p className="mt-2 text-sub">{userInfo.name}</p>
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-sub">계정 타입</label>
-            <p className="mt-1 text-sub">{userInfo.accountType}</p>
+            <label className="block text-base font-medium text-sub border-b">계정 타입</label>
+            <p className="mt-2 text-sub">{userInfo.accountType}</p>
           </div>
           {isProducer && (
             <div>
-              <label className="block text-sm font-medium text-sub">APC명</label>
-              <p className="mt-1 text-sub">{userInfo.apcId}</p>
+              <label className="block text-base font-medium text-sub border-b">APC명</label>
+              <p className="mt-2 text-sub">{userInfo.apcId}</p>
             </div>
           )}
-          <div className="mb-4 pt-3">
+          <div className="mb-4 mt-5 pt-3">
             <button
               type="button"
               className="inline-block w-full py-2 border rounded-md shadow-sm text-sm font-medium text-white border-bor bg-button hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -175,6 +187,7 @@ export default function MyPage() {
             </div>
           )}
         </div>
+        )})()}
       </div>
     </div>
   );

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useUserStore } from '../../store/UserStore';
-const { REACT_APP_NGROK_URL } = process.env;
+
 const OrderManagementDetailPage = () => {
-  const {id} = useUserStore();
+  const { id } = useUserStore();
   const [queryParams] = useSearchParams();
   const userId = queryParams.get('userId');
   const replacedUserId = userId.replace('_', '.');
@@ -21,21 +21,21 @@ const OrderManagementDetailPage = () => {
     detailAddress: ''
   });
 
-  
+
   const handleTrackingNumberChange = (e) => {
     setTrackingNumber(e.target.value);
   };
-  
+
   //배송 출발 처리
   const handleProcessDelivery = async () => {
     try {
       if (trackingNumber === '') {
-        alert('운송장 번호를 입력해주십시오')
+        alert('운송장 번호를 입력해주십시오.')
         return
       }
-      const response = await fetch(REACT_APP_NGROK_URL + `/ordersGo/${id}/${orderId}`, {
+      const response = await fetch(`/api/orders/go/${id}/${orderId}`, {
         method: 'POST',
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           trackingNumber: trackingNumber,
           productId: orderInfo.productId,
           userId: userId
@@ -46,20 +46,20 @@ const OrderManagementDetailPage = () => {
         credentials: 'include',
       });
       if (!response.ok) {
-        alert ('배송 출발 처리에 실패했습니다.:', response.body['message']);
+        alert('배송 출발 처리에 실패했습니다: ', response.body['message']);
         return;
       }
       setIsDeparted(true)
-      alert('배송 출발 처리 완료')
+      alert('배송 출발 처리 완료.')
       handleNavigateOrderManagement();
     } catch (error) {
-      alert ('배송 출발 처리에 실패했습니다.', error)
+      alert('배송 출발 처리에 실패했습니다: ', error)
     }
   };
   //배송 도착 처리
-  const handleArrivalDelivery = async() => {
+  const handleArrivalDelivery = async () => {
     try {
-      const response = await fetch(REACT_APP_NGROK_URL + `/ordersArrive/${id}/${orderId}`, {
+      const response = await fetch(`/api/orders/arrive/${id}/${orderId}`, {
         method: 'POST',
         body: JSON.stringify({
           productId: orderInfo.productId,
@@ -71,15 +71,15 @@ const OrderManagementDetailPage = () => {
         credentials: 'include',
       });
       if (!response.ok) {
-        alert ('배송 도착 처리에 실패했습니다.:', response.body['message']);
+        alert('배송 도착 처리에 실패했습니다: ', response.body['message']);
         return;
       }
-      alert('배송 도착 처리 완료')
+      alert('배송 도착 처리 완료.')
       handleNavigateOrderManagement();
     } catch (error) {
-      alert ('배송 도착 처리에 실패했습니다.', error)
+      alert('배송 도착 처리에 실패했습니다: ', error)
     }
-    
+
   };
 
   // 주문 관리 목록으로 이동
@@ -90,7 +90,7 @@ const OrderManagementDetailPage = () => {
   //배송 출발 상태 조회 함수
   async function getOrderInfo() {
     try {
-      const response = await fetch(REACT_APP_NGROK_URL + `/orders/${userId}/${orderId}`, {
+      const response = await fetch(`/api/orders/${userId}/${orderId}`, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -109,7 +109,7 @@ const OrderManagementDetailPage = () => {
     const fetchOrderInfo = async () => {
       try {
         const orderData = await getOrderInfo();
-        
+
         setOrderInfo({
           productId: orderData.orderedProductId,
           productName: orderData.orderedProductName,
@@ -117,23 +117,23 @@ const OrderManagementDetailPage = () => {
           roadAddress: orderData.roadAddress,
           detailAddress: orderData.detailAddress
         });
-        if(orderData.deliveryStatus === 0){
+        if (orderData.deliveryStatus === 0) {
 
         } else if (orderData.deliveryStatus === 1) {
           setGettedTrackingNumber(orderData.trackingNum)
           setIsDeparted(true);
         }
-        
-        
+
+
       } catch (error) {
-        console.error('Error fetching order info:', error);
+        console.error('Error fetching order info: ', error);
       }
     };
     fetchOrderInfo();
   }, []);
 
-  
-  
+
+
 
   return (
     <BasicLayout>
@@ -148,9 +148,9 @@ const OrderManagementDetailPage = () => {
             <div className="text-lg text-sub border-b border-gray-500 mb-8">상품명: {orderInfo.productName}</div>
             <div className="text-lg text-sub border-b border-gray-500 mb-8">주문 수량: {orderInfo.orderedQuantity} kg</div>
             <div className="flex items-center text-lg border-b border-gray-500 text-sub mb-8">
-            <label htmlFor="trackingNumber" className="mr-2">
-              운송장 번호:
-            </label>
+              <label htmlFor="trackingNumber" className="mr-2">
+                운송장 번호:
+              </label>
               {isDeparted ? (
                 <input
                   type="text"
@@ -173,14 +173,14 @@ const OrderManagementDetailPage = () => {
             <div className="text-lg text-sub border-b border-gray-500 mb-8">도로명 주소: {orderInfo.roadAddress}</div>
             <div className="text-lg text-sub border-b border-gray-500 mb-8">상세 주소: {orderInfo.detailAddress}</div>
             <div className="flex">
-              {!isDeparted ? 
+              {!isDeparted ?
                 ( // isDeparted가 true이면 도착 처리 버튼을 보이지 않도록 설정
-                <button
-                  onClick={handleProcessDelivery}
-                  className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-3"
-                >
-                배송 처리
-                </button>
+                  <button
+                    onClick={handleProcessDelivery}
+                    className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-3"
+                  >
+                    배송 처리
+                  </button>
                 ) : null
               }
               {isDeparted ? ( // isDeparted가 true이면 도착 처리 버튼을 보이지 않도록 설정
@@ -188,9 +188,9 @@ const OrderManagementDetailPage = () => {
                   onClick={handleArrivalDelivery}
                   className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-3"
                 >
-                도착 처리
+                  도착 처리
                 </button>
-                ) : null
+              ) : null
               }
             </div>
           </div>

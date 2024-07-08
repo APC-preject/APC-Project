@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import axios from 'axios';
 import { useUserStore } from '../../store/UserStore';
-const { REACT_APP_NGROK_URL } = process.env;
+
 const QuestionDetailPage = () => {
   const navigate = useNavigate();
   const [queryParams] = useSearchParams();
@@ -14,12 +14,12 @@ const QuestionDetailPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(REACT_APP_NGROK_URL + `/questions/${questionId}`, {
+        const response = await axios.get(`/api/questions/${questionId}`, {
           withCredentials: true,
         });
         setQuestion(response.data);
       } catch (error) {
-        alert('문의 데이터를 가져오는 중 문제가 발생했습니다.' + error.message);
+        console.error('문의 데이터를 가져오는 중 문제가 발생했습니다:' + error.message);
       }
     };
 

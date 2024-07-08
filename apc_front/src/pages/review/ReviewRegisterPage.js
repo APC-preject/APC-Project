@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams , useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
 import axios from 'axios';
 import { useUserStore } from '../../store/UserStore';
-const { REACT_APP_NGROK_URL } = process.env;
+
 function ReviewRegisterPage() {
   const { user } = useAuthStore();
   const { id } = useUserStore();
@@ -24,38 +24,33 @@ function ReviewRegisterPage() {
     setContent(e.target.value);
   };
 
-  const handleNavigateReviewalbeList = () => {
-    navigate(`/review/ableList`);
-  };
-
   useEffect(() => {
     const fetchProductInfo = async () => {
       try {
-        const response = await axios.get(REACT_APP_NGROK_URL + `/products/${productId}`, {
+        const response = await axios.get(`/api/products/${productId}`, {
           withCredentials: true,
         });
         const productData = response.data;
         setProductInfo({
-          id : productId,
-          name : productData.pName
+          id: productId,
+          name: productData.pName
         });
       } catch (error) {
-        alert('제품 정보를 불러오는데 오류가 발생했습니다.', error)
-        console.log(error)
+        alert('제품 정보를 불러오는데 오류가 발생했습니다:', error)
       }
     };
     fetchProductInfo();
   }, []);
 
 
-  const handleSubmit = async() => {
+  const handleSubmit = async () => {
     const reviewData = {
-      userID : id,
+      userID: id,
       rating,
       content
     };
     try {
-      await axios.post(REACT_APP_NGROK_URL + '/reviews', {
+      await axios.post('/api/reviews', {
         userId: id,
         productId,
         orderId,
@@ -64,14 +59,13 @@ function ReviewRegisterPage() {
         withCredentials: true,
       });
       navigate(`/review/ableList`);
-    } catch(error) {
+    } catch (error) {
       alert('리뷰를 등록하는데 실패했습니다.');
-      console.log(error);
     }
   };
 
   if (!user) {
-    return(
+    return (
       <BasicLayout>
         <p className='pt-20 text-3xl text-baritem'>
           로그인 후 이용하십시오.
@@ -79,10 +73,6 @@ function ReviewRegisterPage() {
 
       </BasicLayout>
     )
-  }
-
-  if (!productInfo) {
-    return <div className='text-sub'>404</div>;
   }
 
   return (
@@ -100,9 +90,8 @@ function ReviewRegisterPage() {
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
-                  className={`mr-1 text-2xl focus:outline-none ${
-                    star <= rating ? 'text-yellow-400' : 'text-gray-300'
-                  }`}
+                  className={`mr-1 text-2xl focus:outline-none ${star <= rating ? 'text-yellow-400' : 'text-gray-300'
+                    }`}
                   onClick={() => handleRatingChange(star)}
                 >
                   ★

@@ -1,6 +1,6 @@
-import React, {useCallback} from "react"
+import React, { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import {useAuthStore} from '../../store/AuthStore';
+import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from "../../store/UserStore";
 
 export default function UserDropdown() {
@@ -10,21 +10,25 @@ export default function UserDropdown() {
   const navigate = useNavigate()
 
   const handleClickMain = useCallback(() => {
-    navigate({pathname:'/'})
-  },[navigate])
+    navigate({ pathname: '/' })
+  }, [navigate])
   const handleClickLogin = useCallback(() => {
-    navigate({pathname:'/user/login'})
-  },[navigate])
+    navigate({ pathname: '/user/login' })
+  }, [navigate])
   const handleClickMyPage = useCallback(() => {
-    navigate({pathname:'/user/my'})
-  },[navigate])
+    navigate({ pathname: '/user/my' })
+  }, [navigate])
+  const handleClickRegister = useCallback(() => {
+    navigate({ pathname: '/user/register' })
+  }, [navigate])
 
   const handleClickLogout = useCallback(async () => {
-    try{
+    try {
       handleClickMain()
       await signOut()
       await clearUserData()
-    } catch(error){
+      alert("로그아웃 완료!")
+    } catch (error) {
       console.error('Log out error:', error);
     }
 
@@ -35,24 +39,24 @@ export default function UserDropdown() {
   if (!user || id == null) {
     return (
       <div>
-            {/* 드롭다운 메뉴의 내용 */}
-            <a className={dropdownstyle} onClick={handleClickLogin}>
-              <span className="flex-1 ml-10 whitespace-nowrap">로그인</span>
-            </a>
+        <a className={dropdownstyle} onClick={handleClickLogin}>
+          <span className="flex-1 ml-10 whitespace-nowrap">로그인</span>
+        </a>
+        <a className={dropdownstyle} onClick={handleClickRegister}>
+          <span className="flex-1 ml-10 whitespace-nowrap">회원가입</span>
+        </a>
       </div>
+
     )
   }
-  return ( 
-    
-
-          <div>
-            {/* 드롭다운 메뉴의 내용 */}
-            <a className={dropdownstyle} onClick={handleClickMyPage}>
-              <span className="flex-1 ml-10 whitespace-nowrap">내정보</span>
-            </a>
-            <a className={dropdownstyle} onClick={handleClickLogout}>
-              <span className="flex-1 ml-10 whitespace-nowrap">로그아웃</span>
-            </a>
-          </div>    
+  return (
+    <div>
+      <a className={dropdownstyle} onClick={handleClickMyPage}>
+        <span className="flex-1 ml-10 whitespace-nowrap">내정보</span>
+      </a>
+      <a className={dropdownstyle} onClick={handleClickLogout}>
+        <span className="flex-1 ml-10 whitespace-nowrap">로그아웃</span>
+      </a>
+    </div>
   )
 }

@@ -4,7 +4,6 @@ import BasicLayout from '../../layout/BasicLayout';
 import axios from 'axios';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
-const { REACT_APP_NGROK_URL } = process.env;
 
 function ReviewableListPage() {
   const { user } = useAuthStore();
@@ -18,7 +17,7 @@ function ReviewableListPage() {
         return
       }
       try {
-        const response = await axios.get(REACT_APP_NGROK_URL + `/orders/${id}`, {
+        const response = await axios.get(`/api/orders/${id}`, {
           withCredentials: true,
         });
         const data = response.data;
@@ -29,7 +28,7 @@ function ReviewableListPage() {
         const reviewableArray = ordersArray.filter(order => order.deliveryStatus === 2 && order.isReviewed === 0);
         setReviewables(reviewableArray)
       } catch (error) {
-        alert("배송 정보를 가져오던 중 에러가 발생했습니다.: " + error.message);
+        alert("배송 정보를 가져오던 중 에러가 발생했습니다: " + error.message);
       }
     };
     fetchData();
@@ -41,7 +40,7 @@ function ReviewableListPage() {
   };
 
   if (!user || id == null) {
-    return(
+    return (
       <BasicLayout>
         <p className='pt-20 text-3xl text-baritem'>
           로그인 후 이용하십시오.
@@ -55,7 +54,7 @@ function ReviewableListPage() {
     <BasicLayout>
       <div className="container mx-auto px-4 py-20">
         <h1 className="text-2xl font-bold mb-4 text-sub border-b border-gray-300 ">
-        {replaceId(id)} 님의 리뷰 가능한 제품 목록
+          {replaceId(id)} 님의 리뷰 가능한 제품 목록
         </h1>
         <div className="overflow-x-auto">
           <table className="min-w-full table-auto border-collapse">

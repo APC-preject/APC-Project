@@ -26,6 +26,7 @@ module.exports = {
         'button2Hov' : '#15803D',
         'button4Hov' : '#bf524e',
         'listbg' : '#CCCCCC',      
+        'gitblack' : '#000000',
       }
     },
   },

@@ -20,8 +20,9 @@ const ProductListPage = lazy(() => import("../pages/order/ProductListPage"))
 const OrderedListPage = lazy(() => import("../pages/order/OrderedListPage"))
 const ProductRegisterPage = lazy(() => import("../pages/order/ProductRegisterPage"))
 const OrderManagementPage = lazy(() => import("../pages/order/OrderManagementPage"))
-const ProductDetailPage = lazy(() => import("../pages/order/ProductDetailPage")) 
+const ProductDetailPage = lazy(() => import("../pages/order/ProductDetailPage"))
 const OrderManagementDetailPage = lazy(() => import("../pages/order/OrderManagementDetailPage"))
+const ProductBuyPage = lazy(() => import("../pages/order/ProductBuyPage"))
 
 // delivery
 const DeliveryListPage = lazy(() => import("../pages/delivery/DeliveryListPage"))
@@ -32,115 +33,128 @@ const ReviewRegisterPage = lazy(() => import("../pages/review/ReviewRegisterPage
 
 // question
 const QuestionPage = lazy(() => import("../pages/question/QuestionPage"))
-const QuestionListPage = lazy(() => import("../pages/question/QuestionListPage")) 
-const QuestionDetailPage = lazy(() => import("../pages/question/QuestionDetailPage")) 
+const QuestionListPage = lazy(() => import("../pages/question/QuestionListPage"))
+const QuestionDetailPage = lazy(() => import("../pages/question/QuestionDetailPage"))
 const QuestionResponsePage = lazy(() => import("../pages/question/QuestionResponsePage"))
-const MyQuestionListPage = lazy(() => import("../pages/question/MyQuestionListPage")) 
+const MyQuestionListPage = lazy(() => import("../pages/question/MyQuestionListPage"))
+
+// else
+const InfoPage = lazy(() => import("../pages/else/InfoPage"))
 
 const root = createBrowserRouter(
 
     [
         // 메인페이지
         {
-            path:"/",
-            element: <Suspense fallback={Loading}><Main/></Suspense>
+            path: "/",
+            element: <Suspense fallback={Loading}><Main /></Suspense>
         },
 
 
         // admin페이지
         {
-            path:"/admin/management",
-            element: <Suspense fallback={Loading}><AdminManagementPage/></Suspense>
+            path: "/admin/management",
+            element: <Suspense fallback={Loading}><AdminManagementPage /></Suspense>
         },
 
 
         // 계정 관련 페이지
         {
-            path:"/user/login",
-            element: <Suspense fallback={Loading}><Login/></Suspense>
+            path: "/user/login",
+            element: <Suspense fallback={Loading}><Login /></Suspense>
         },
         {
-            path:"/user/my",
-            element: <Suspense fallback={Loading}><MyPage/></Suspense>
+            path: "/user/my",
+            element: <Suspense fallback={Loading}><MyPage /></Suspense>
         },
         {
-            path:"/user/register",
-            element: <Suspense fallback={Loading}><RegisterPage/></Suspense>
+            path: "/user/register",
+            element: <Suspense fallback={Loading}><RegisterPage /></Suspense>
         },
 
 
         // 입고 관련 페이지 (저장고)
         {
-            path:"/store/coldStorage",
-            element: <Suspense fallback={Loading}><ColdStoragePage/></Suspense>
+            path: "/store/coldStorage",
+            element: <Suspense fallback={Loading}><ColdStoragePage /></Suspense>
         },
 
 
         // 주문 관련 페이지
         {
-            path:"/product/list",
-            element: <Suspense fallback={Loading}><ProductListPage/></Suspense>
+            path: "/product/list",
+            element: <Suspense fallback={Loading}><ProductListPage /></Suspense>
         },
         {
-            path:"/product/detail",
-            element: <Suspense fallback={Loading}><ProductDetailPage/></Suspense>
+            path: "/product/detail",
+            element: <Suspense fallback={Loading}><ProductDetailPage /></Suspense>
         },
         {
-            path:"/product/orderedList",
-            element: <Suspense fallback={Loading}><OrderedListPage/></Suspense>
+            path: "/product/orderedList",
+            element: <Suspense fallback={Loading}><OrderedListPage /></Suspense>
         },
         {
-            path:"/product/register",
-            element: <Suspense fallback={Loading}><ProductRegisterPage/></Suspense>
+            path: "/product/register",
+            element: <Suspense fallback={Loading}><ProductRegisterPage /></Suspense>
         },
         {
-            path:"/product/order/management",
-            element: <Suspense fallback={Loading}><OrderManagementPage/></Suspense>
+            path: "/product/order/management",
+            element: <Suspense fallback={Loading}><OrderManagementPage /></Suspense>
         },
         {
-            path:"/product/order/management/detail",
-            element: <Suspense fallback={Loading}><OrderManagementDetailPage/></Suspense>
+            path: "/product/order/management/detail",
+            element: <Suspense fallback={Loading}><OrderManagementDetailPage /></Suspense>
+        },
+        {
+            path: "/product/buy",
+            element: <Suspense fallback={Loading}><ProductBuyPage /></Suspense>
         },
 
 
         // 배송 관련 페이지
         {
-            path:"/delivery/list",
-            element: <Suspense fallback={Loading}><DeliveryListPage/></Suspense>
+            path: "/delivery/list",
+            element: <Suspense fallback={Loading}><DeliveryListPage /></Suspense>
         },
 
 
         // 리뷰 관련 페이지
         {
-            path:"/review/ableList",
-            element: <Suspense fallback={Loading}><ReviewableListPage/></Suspense>
+            path: "/review/ableList",
+            element: <Suspense fallback={Loading}><ReviewableListPage /></Suspense>
         },
         {
-            path:"/review/register",
-            element: <Suspense fallback={Loading}><ReviewRegisterPage/></Suspense>
+            path: "/review/register",
+            element: <Suspense fallback={Loading}><ReviewRegisterPage /></Suspense>
         },
 
 
         // 고객 문의 관련 페이지
         {
-            path:"/customer/question",
-            element: <Suspense fallback={Loading}><QuestionPage/></Suspense>
+            path: "/customer/question",
+            element: <Suspense fallback={Loading}><QuestionPage /></Suspense>
         },
         {
-            path:"/customer/question/list",
-            element: <Suspense fallback={Loading}><QuestionListPage/></Suspense>
+            path: "/customer/question/list",
+            element: <Suspense fallback={Loading}><QuestionListPage /></Suspense>
         },
         {
-            path:"/customer/question/my/list",
-            element: <Suspense fallback={Loading}><MyQuestionListPage/></Suspense>
+            path: "/customer/question/my/list",
+            element: <Suspense fallback={Loading}><MyQuestionListPage /></Suspense>
         },
         {
-            path:"/customer/question/detail",
-            element: <Suspense fallback={Loading}><QuestionDetailPage/></Suspense>
+            path: "/customer/question/detail",
+            element: <Suspense fallback={Loading}><QuestionDetailPage /></Suspense>
         },
         {
-            path:"/customer/question/response",
-            element: <Suspense fallback={Loading}><QuestionResponsePage/></Suspense>
+            path: "/customer/question/response",
+            element: <Suspense fallback={Loading}><QuestionResponsePage /></Suspense>
+        },
+
+        // 기타정보페이지
+        {
+            path: "/else/info",
+            element: <Suspense fallback={Loading}><InfoPage /></Suspense>
         },
 
     ]

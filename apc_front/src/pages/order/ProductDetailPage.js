@@ -1,51 +1,42 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import BasicLayout from '../../layout/BasicLayout';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../store/UserStore';
-import { useAuthStore } from '../../store/AuthStore';
-import MessageModal from '../../modal/MessageModal';
-const { REACT_APP_NGROK_URL } = process.env;
+
 const ProductDetailPage = () => {
   const [queryParams] = useSearchParams();
   const productId = queryParams.get('id');
-  const [quantity, setQuantity] = useState(0);
-  const [orderMessage, setOrderMessage] = useState('');
   const [product, setProduct] = useState(null);
   const [leftQuantity, setLeftQuantity] = useState(0);
   const [providerName, setProviderName] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const { id } = useUserStore();
-  const { user } = useAuthStore();
   const navigate = useNavigate();
-  const [roadAddress, setRoadAddress] = useState('');
-  const [detailAddress, setDetailAddress] = useState('');
+  const [roadAddress] = useState('');
+  const [detailAddress] = useState('');
   const [provider_Name, setProvider_Name] = useState('');
   const [reviews, setReviews] = useState([{}]);
-  
-  // 도로명 주소 입력 변화
-  const handleRoadAddressChange = (e) => {
-    setRoadAddress(e.target.value);
-  };
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingId, setIsLoadingId] = useState(true);
+  const [reviewable, setReviewable] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [content, setContent] = useState('');
+  const [isProvider, setIsProvider] = useState(false);
+  const [dataModified, setDataModified] = useState(false);
 
-  // 상세 주소 입력 변화
-  const handleDetailAddressChange = (e) => {
-    setDetailAddress(e.target.value);
-  };
+  const [productName, setProductName] = useState('');
+  const [price, setPrice] = useState(0);
+  const [quantity, setQuantity] = useState(0);
+  const [description, setDescription] = useState('');
 
-  // 제품 목록으로 네비게이트
+  const orderId = useRef(null);
+
   const handleNavigateProductList = useCallback(() => {
     navigate({ pathname: '/product/list' });
   }, [navigate]);
 
-  // 수량 입력 변화
-  const handleQuantityChange = (e) => {
-    setQuantity(parseInt(e.target.value));
-  };
-
-  // 제품 정보 조회 함수
   async function getProductInfo(productId) {
     try {
-      const response = await fetch(REACT_APP_NGROK_URL + `/products/${productId}`, {
+      const response = await fetch(`/api/products/${productId}`, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -54,15 +45,14 @@ const ProductDetailPage = () => {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error fetching product:', error);
+      console.error('Error fetching product: ', error);
       return null;
     }
   }
 
-  // 제품 리뷰 목록 조회 함수
   async function getReviewList() {
     try {
-      const response = await fetch(REACT_APP_NGROK_URL + `/reviews/${productId}`, {
+      const response = await fetch(`/api/review/${productId}`, {
         credentials: 'include',
       });
       if (!response.ok && response.status !== 404) {
@@ -74,266 +64,602 @@ const ProductDetailPage = () => {
       }
       return data;
     } catch (error) {
-      console.error('Error fetching product:', error);
+      console.error('Error fetching product: ', error);
       return null;
     }
   }
 
-  // 컴포넌트 마운트 시, 제품 상세정보 조회, 리뷰 조회 실행
+  async function checkReviewable() {
+    if (!id) return false;
+    try {
+      const response = await fetch(`/api/orders/${id}`, {
+        credentials: 'include',
+      });
+      const data = await response.json();
+      const ordersArray = Object.entries(data).map(([key, value]) => ({
+        id: key,
+        ...value,
+      }));
+      const reviewableArray = ordersArray.filter((order) => {
+        return (
+          order.deliveryStatus === 2 &&
+          order.isReviewed === 0 &&
+          order.orderedProductId === productId
+        );
+      });
+      if (reviewableArray.length !== 0) {
+        orderId.current = reviewableArray[0].id;
+        return true;
+      } else return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  const checkProvider = async (userId, productId) => {
+    try {
+      const response = await fetch(`/api/products/user/${userId}?productId=${productId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check provider status.');
+      }
+
+      const data = await response.json();
+      return data.isProvider;
+    } catch (error) {
+      console.error('Error checking provider status:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     const fetchProductData = async () => {
+      if (!productId) return;
       try {
         const data = await getProductInfo(productId);
         if (data) {
           data.id = productId;
           setLeftQuantity(data.pQuantity);
           setProduct(data);
-          setProvider_Name(data.providerName.replace(".", "_"));
+          setProvider_Name(data.providerName.replace('.', '_'));
           setProviderName(data.providerName);
 
+          setProductName(data.pName);
+          setPrice(data.pPrice);
+          setQuantity(data.pQuantity);
+          setDescription(data.pDescription);
+
           try {
-            getReviewList().then(reviewData => {
+            getReviewList().then((reviewData) => {
               if (reviewData) {
-                  const reviewsArray = Object.entries(reviewData).map(([key, value]) => ({
-                      id: key,
-                      ...value,
+                const reviewsArray = Object.entries(reviewData)
+                  .reverse()
+                  .map(([key, value]) => ({
+                    id: key,
+                    ...value,
                   }));
-                  setReviews(reviewsArray);
-                  console.log(reviewData);
+                setReviews(reviewsArray);
               } else {
-                  setReviews([])
-                  return;
+                setReviews([]);
+                return;
               }
-            })
-          } catch (error){
-            alert('리뷰 목록을 가져오는 도중 문제가 발생했습니다.' + error.message)
+            });
+          } catch (error) {
+            alert('리뷰 목록을 가져오는 도중 문제가 발생했습니다: ' + error.message);
           }
-
-
         } else {
           alert('Id에 해당하는 상품이 존재하지 않습니다.');
+          navigate('/product/list');
         }
       } catch (error) {
-        alert('상품 상세정보를 가져오는 도중 문제가 발생했습니다.: ' + error.message);
+        console.log(error);
+        alert('상품 상세정보를 가져오는 도중 문제가 발생했습니다: ' + error.message);
       }
+      setIsLoading(false);
     };
     fetchProductData();
   }, [productId]);
 
-  // 주문 버튼 눌렀을 때의 처리
-  const handleOrder = () => {
-    if (id == null || !user) {
-      alert('로그인 후 주문해주세요.');
-      return;
-    }
+  useEffect(() => {
+    const idUpdate = async () => {
+      if (id) {
+        setReviewable(await checkReviewable());
+        const isProvider = await checkProvider(id, productId);
+        setIsProvider(isProvider);
+        setIsLoadingId(false);
+      }
+    };
+    idUpdate();
+  }, [id]);
 
-    if (quantity <= 0) {
-      setOrderMessage('주문 수량을 선택해주세요.');
-      return;
-    }
-
-    if (roadAddress == null) {
-      alert('도로명 주소를 입력해주세요');
-      return;
-    }
-
-    if (detailAddress == null) {
-      alert('상세 주소를 입력해주세요');
-      return;
-    }
-
-    setShowModal(true); // 모달을 보여줌
+  const handleBuy = () => {
+    navigate(`/product/buy?id=${productId}`);
   };
 
-  // 모달에서 확인을 눌렀을 때 실제 주문 처리
-  const handleConfirmOrder = async () => {
-    const orderedDate = new Date().toLocaleString();
-    const productName = product.pName;
-    const orderedPrice = product.pPrice * quantity;
-    const orderedProductId = productId;
+  const handleLogin = () => {
+    navigate(`/user/login`);
+  };
 
-    const newOrder = {
-      orderedDate,
-      orderedProductId,
-      orderedProductName: productName,
-      orderedQuantity: quantity,
-      orderedPrice,
-      trackingNum: '',
-      deliveryStatus: 0,
-      departedDate: '',
-      arrivedDate: '',
-      isReviewed: 0,
-      roadAddress: roadAddress,
-      detailAddress: detailAddress,
-    };
+  const handleRatingChange = (selectedRating) => {
+    setRating(selectedRating);
+  };
 
-    const newDeliveryWait = {
-      userID: id,
-      productName : productName,
-      orderedDate,
-      deliveryStatus : 0
-    };
+  const handleContentChange = (e) => {
+    setContent(e.target.value);
+  };
 
-    console.log(id);
+  const handleDataModified = () => {
+    setDataModified(true);
+  };
 
-    const send_data = {
-      newOrder: newOrder, 
-      newDeliveryWait: newDeliveryWait, 
-      id: id, 
-      productId: productId, 
-      quantity: quantity, 
-      provider_Name: provider_Name, 
-      orderedPrice: orderedPrice
-    }
+  const handleCancelDataModified = () => {
+    setProductName(product.pName);
+    setPrice(product.pPrice);
+    setQuantity(product.pQuantity);
+    setDescription(product.pDescription);
+    setDataModified(false);
+  };
 
+  const uploadDB = async (product_data) => {
     try {
-      const response = await fetch(REACT_APP_NGROK_URL + `/orders`, {
-        method: 'POST',
-        body: JSON.stringify(send_data),
+      const response = await fetch(`/api/products/${productId}`, { /// back 쪽에서 메서드 생성 필요
+        method: 'PUT',
+        body: JSON.stringify({
+          product_data: product_data
+        }),
         headers: {
-          'Content-Type': 'application/json' // Content-Type 헤더 추가
+          'Content-Type': 'application/json'
         },
         credentials: 'include',
       });
-      alert(`총 ${quantity}kg 주문하셨습니다. 가격은 ${orderedPrice}원 입니다.`);
-      handleNavigateProductList();
       if (!response.ok) {
-        throw new Error(response.json().message);
+        throw new Error('Network response error!');
       }
+      alert('데이터베이스 저장 완료.');
+      return true;
     } catch (error) {
-      alert('주문 처리 중 문제가 발생했습니다.', error);
-      return;
+      console.log(error);
+      alert('데이터베이스 저장 실패.');
+      return false;
     }
+  }
 
+  const handleCompleteDataModified = async () => {
+    const productData = {
+      providerName: id,
+      pName: productName,
+      pPrice: price,
+      pQuantity: quantity,
+      pDescription: description,
+      pImageUrl: product.pImageUrl,
+      registerTime: product.registerTime
+    };
 
-    // 수량 업데이트 및 검사로직
-    // try {
-    //   try {
-        
-
-    //     alert(`총 ${quantity}kg 주문하셨습니다. 가격은 ${orderedPrice}원 입니다.`);
-    //     handleNavigateProductList();
-    //   } catch (error) {
-    //     alert('주문 데이터 저장 중 문제가 발생했습니다.', error);
-    //     // 주문 데이터 저장 중 문제 생겼으니 뺏던 수량 원상 복구
-    //     await runTransaction(productRef, (product) => {
-    //       if (product) {
-    //         product.pQuantity += quantity;
-    //       }
-    //       return product;
-    //     });
-    //     return;
-    //   }
-    // } catch (error) {
-    //   alert('수량 확인 및 업데이트 중 문제가 발생했습니다.', error);
-    //   return;
-    // }
+    const result = await uploadDB(productData);
+    if (result) {
+      setDataModified(false);
+      navigate(0);
+    } else {
+      handleCancelDataModified();
+    }
   };
 
-  //Todo: 실제 상품이 존재하지 않는 경우가 아니라 database에서 로드되는 도중에도 이부분이 잠시 나타남. 이에 대한 처리 필요
+  const handleProductNameChange = (e) => {
+    setProductName(e.target.value);
+  };
+
+  const handlePriceChange = (e) => {
+    setPrice(parseInt(e.target.value));
+  };
+
+  const handleQuantityChange = (e) => {
+    setQuantity(parseInt(e.target.value));
+  };
+
+  const handleDescriptionChange = (e) => {
+    setDescription(e.target.value);
+  };
+
+  const handleClickQuestion = () => {
+    navigate(`/customer/question?product=${productId}`);
+  };
+
+  const handleSubmit = async () => {
+    const reviewData = {
+      userID: id,
+      rating,
+      content,
+    };
+    try {
+      if (orderId.current === null) throw new Error();
+      const response = await fetch('/api/review', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: id,
+          productId: productId,
+          orderId: orderId.current,
+          reviewData,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      alert('리뷰를 등록하였습니다.');
+      setReviewable(await checkReviewable());
+      try {
+        getReviewList().then((reviewData) => {
+          if (reviewData) {
+            const reviewsArray = Object.entries(reviewData)
+              .reverse()
+              .map(([key, value]) => ({
+                id: key,
+                ...value,
+              }));
+            setReviews(reviewsArray);
+          } else {
+            setReviews([]);
+            return;
+          }
+        });
+      } catch (error) {
+        alert('리뷰 목록을 가져오는 도중 문제가 발생했습니다: ' + error.message);
+      }
+    } catch (error) {
+      alert('리뷰를 등록하는데 실패했습니다.');
+    }
+  };
+
+  if (isLoading || isLoadingId) {
+    return (
+      <BasicLayout>
+        <style>
+          {`
+            input[type="number"] {
+              -webkit-appearance: none;
+              -moz-appearance: textfield;
+              appearance: textfield;
+            }
+            input[type="number"]::-webkit-outer-spin-button,
+            input[type="number"]::-webkit-inner-spin-button {
+              -webkit-appearance: inner-spin-button;
+              opacity: 1;
+            }
+            input[type="number"]::-moz-spin-button,
+            input[type="number"]::-moz-inner-spin-button {
+              -moz-appearance: inner-spin-button;
+              opacity: 1;
+            }
+          `}
+        </style>
+        <div className="container mx-auto py-20 px-4" style={{ maxWidth: '1200px' }}>
+          <h1 className="text-2xl font-bold mb-6 border-b text-sub">상품 상세</h1>
+          <div id="loading-spinner" className="flex items-center justify-center">
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-4 border-t-blue-500 rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </BasicLayout>
+    );
+  }
+
   if (!product) {
-    return <div className="text-sub">상품을 찾을 수 없습니다.</div>;
+    return (
+      <BasicLayout>
+        <style>
+          {`
+            input[type="number"] {
+              -webkit-appearance: none;
+              -moz-appearance: textfield;
+              appearance: textfield;
+            }
+            input[type="number"]::-webkit-outer-spin-button,
+            input[type="number"]::-webkit-inner-spin-button {
+              -webkit-appearance: inner-spin-button;
+              opacity: 1;
+            }
+            input[type="number"]::-moz-spin-button,
+            input[type="number"]::-moz-inner-spin-button {
+              -moz-appearance: inner-spin-button;
+              opacity: 1;
+            }
+          `}
+        </style>
+        <div className="container mx-auto py-20 px-4" style={{ maxWidth: '1200px' }}>
+          <h1 className="text-2xl font-bold mb-6 border-b text-sub">상품 상세</h1>
+          <div className='text-sub'>상품을 찾을 수 없습니다</div>
+        </div>
+      </BasicLayout>
+    );
   }
 
   return (
     <BasicLayout>
+      <style>
+        {`
+          input[type="number"] {
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+            appearance: textfield;
+          }
+          input[type="number"]::-webkit-outer-spin-button,
+          input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: inner-spin-button;
+            opacity: 1;
+          }
+          input[type="number"]::-moz-spin-button,
+          input[type="number"]::-moz-inner-spin-button {
+            -moz-appearance: inner-spin-button;
+            opacity: 1;
+          }
+        `}
+      </style>
       {/* 사진과 주문 창 */}
-      <div className="container mx-auto py-20 px-4">
-        <h1 className="text-2xl font-bold mb-6 border-b  text-sub">상품 상세</h1>
-      <div className="flex justify-center my-8 border bg-textbg border-bor text-2xl text-listbg font-bold">
-        {providerName} 님의 상품
-      </div>
-      <div className="flex justify-center items-center  border border-bor bg-textbg">
-        <div className="flex w-full items-stretch">
-          <div className="w-1/2 flex flex-col justify-center">
-            <img src={product.pImageUrl} alt="Fruit" className="w-full h-full object-cover mx-auto p-10" />
-          </div>
-          <div className="w-1/2 flex flex-col items-start p-10 justify-center">
-            <div className="text-2xl text-sub font-bold mb-2">{product.pName}</div>
-            <div className="text-lg text-sub mb-2">가격 : 1kg/{product.pPrice}원</div>
-            <div className="text-lg text-sub mb-2">남은 수량(kg) : {leftQuantity}kg</div>
-            <div className="flex items-center text-lg text-sub mb-2">
-              <label htmlFor="quantity" className="mr-2">주문 수량(kg) :</label>
-              <input
-                type="number"
-                id="quantity"
-                min="0"
-                value={quantity}
-                onChange={handleQuantityChange}
-                className="w-20 px-2 py-1 bg-textbg border border-bor text-sub rounded"
-              />
+      <div className="container mx-auto py-20 px-4" style={{ maxWidth: '1200px' }}>
+        <h1 className="text-2xl font-bold mb-6 border-b text-sub">상품 상세</h1>
+        {(() => {
+          if (isProvider) {
+            return (
+              <div className="flex p-3 border bg-textbg border-bor text-2xl text-listbg text-white font-bold">
+                본인의 판매 상품
+              </div>
+            );
+          } else {
+            return (
+              <div className="flex p-3 border bg-textbg border-bor text-2xl text-listbg text-white font-bold">
+                {providerName} 님의 상품
+              </div>
+            );
+          }
+        })()}
+        
+        <div className="flex justify-center items-center border border-bor bg-textbg">
+          <div className="flex w-full items-stretch">
+            <div className="w-1/2 flex flex-col justify-center">
+              <img src={product.pImageUrl} alt="Fruit" className="w-full h-full object-cover mx-auto p-3" />
             </div>
-            <div className="text-lg font-bold mb-2 text-sub">총액 : {product.pPrice * quantity}원</div>
-            <div className="flex flex-col items-start text-lg text-sub mb-2">
-              <label htmlFor="roadAddress" className="mb-1">도로명 주소:</label>
-              <input
-                type="text"
-                id="roadAddress"
-                value={roadAddress}
-                onChange={handleRoadAddressChange}
-                className="w-full px-2 py-1 bg-textbg border border-gray-500 text-sub rounded"
-              />
-            </div>
-            <div className="flex flex-col items-start text-lg text-sub mb-2">
-              <label htmlFor="detailAddress" className="mb-1">상세 주소:</label>
-              <input
-                type="text"
-                id="detailAddress"
-                value={detailAddress}
-                onChange={handleDetailAddressChange}
-                className="w-full px-2 py-1 bg-textbg border border-gray-500 text-sub rounded"
-              />
-            </div>
-            <button
-              onClick={handleOrder}
-              className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded"
-            >
-              주문
-            </button>
-            {orderMessage && <div className="mt-4 text-baritem">{orderMessage}</div>}
+            <div className="w-1/2 flex flex-col items-start p-5 justify-center">
+              {(() => {
+                if (dataModified) {
+                  return (
+                  <>
+                    <div className="mb-4">
+                      <h2 className="text-xl font-semibold mb-2 text-sub">상품명</h2>
+                      <input
+                        className="w-full px-3 py-2 text-sub border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 bg-textbg"
+                        type="text"
+                        placeholder="상품명을 입력해주세요."
+                        value={productName}
+                        onChange={handleProductNameChange}
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <h2 className="text-xl font-semibold mb-2 text-sub">가격(원) / kg</h2>
+                      <input
+                        className="w-full px-3 py-2 text-sub border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 bg-textbg"
+                        type="number"
+                        placeholder="가격을 입력해주세요."
+                        value={price}
+                        onChange={handlePriceChange}
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <h2 className="text-xl font-semibold mb-2 text-sub">수량 (kg)</h2>
+                      <input
+                        className="w-full px-3 py-2 text-sub border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 bg-textbg"
+                        type="number"
+                        placeholder="수량을 입력해주세요."
+                        value={quantity}
+                        onChange={handleQuantityChange}
+                      />
+                    </div>
+                  </>
+                  )
+                } else {
+                  return (
+                    <>
+                    <div className="w-full text-3xl font-bold mb-6 border-b text-sub">{product.pName}</div>
+                    <div className="text-lg text-sub mb-5 mt-5">가격 : {product.pPrice}원/1kg</div>
+                    <div className="text-lg text-sub mb-5">남은 수량(kg) : {leftQuantity}kg</div>
+                    </>
+                  )
+                }
+              })()}
 
-            {showModal && (
-            <MessageModal
-            message="주문을 확정하시겠습니까?"
-            onConfirm={handleConfirmOrder}
-            onCancel={() => setShowModal(false)}
-            />
-            )}
+              {(() => {
+                if (!id) {
+                  return (
+                    <>
+                      <button
+                        onClick={handleLogin}
+                        className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-5"
+                      >
+                        로그인 후 주문 가능
+                      </button>
+                      <button
+                        onClick={handleLogin}
+                        className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-5"
+                      >
+                        로그인 후 문의 가능
+                      </button>
+                    </>
+                  );
+                }
+                if (isProvider) {
+                  if (!dataModified) {
+                    return (
+                      <button
+                        onClick={handleDataModified}
+                        className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-5"
+                      >
+                        상품 정보 수정하기
+                      </button>
+                    );
+                  } else {
+                    return (
+                      <>
+                      <button
+                        onClick={handleCompleteDataModified}
+                        className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-5"
+                      >
+                        정보 수정 완료
+                      </button>
+                      <button
+                        onClick={handleCancelDataModified}
+                        className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-5"
+                      >
+                        정보 수정 취소
+                      </button>
+                      </>
+                    );
+                  }
+                }
+                else {
+                  if (leftQuantity === 0) {
+                    return (
+                      <>
+                      <div className="bg-button2 transition-colors duration-300 text-white px-4 py-2 rounded mt-5">
+                        상품 품절
+                      </div>
+                      <button
+                        onClick={handleClickQuestion}
+                        className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-5"
+                      >
+                        문의하기
+                      </button>
+                      </>
+                    );
+                  }
+                  else {
+                    return (
+                      <>
+                        <button
+                          onClick={handleBuy}
+                          className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-5"
+                        >
+                          주문하기
+                        </button>
+                        <button
+                          onClick={handleClickQuestion}
+                          className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white px-4 py-2 rounded mt-5"
+                        >
+                          문의하기
+                        </button>
+                      </>
+                    );
+                  }
+                }
+              })()}
+            </div>
           </div>
         </div>
-      </div>
-      {/* 제품 상세 설명 */}
-      <div className="flex justify-center my-8 items-center border border-bor">
-        <div className="p-6 bg-textbg rounded-lg shadow-md w-full">
+        <div className="p-6 bg-textbg rounded-lg shadow-md w-full mt-5 mb-5">
           <h2 className="text-2xl font-bold mb-4 text-sub">제품 상세 설명</h2>
-          <p className="text-baritem">{product.pDescription}</p>
+          {(() => {
+            if (dataModified) {
+              return (
+                <textarea
+                  className="w-full px-3 py-2 text-sub border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 bg-textbg"
+                  rows="4"
+                  placeholder="상품에 대한 설명을 입력해주세요."
+                  value={description}
+                  onChange={handleDescriptionChange}
+                ></textarea>
+              );
+            } else {
+              return (
+                <p className="text-baritem text-xl text-sub p-2">{product.pDescription}</p>
+              );
+            }
+          })()}
+        </div>
+        <div className="flex justify-center my-8 items-center border border-bor">
+          {(() => {
+            if (!id) {
+              return (
+                <div className="bg-main shadow-md rounded-lg p-6 border border-bor w-full">
+                  <div className="mb-4">
+                    <h2 className="text-xl font-semibold mb-2 text-sub">로그인 후 리뷰를 남길 수 있습니다</h2>
+                  </div>
+                </div>
+              );
+            } else if (!isProvider && reviewable) {
+              return (
+                <div className="bg-main shadow-md rounded-lg p-6 border border-bor w-full">
+                  <div className="mb-4">
+                    <h2 className="text-xl font-semibold mb-2 text-sub">평점</h2>
+                    <div className="flex items-center">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          className={`mr-1 text-2xl focus:outline-none ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                          onClick={() => handleRatingChange(star)}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <h2 className="text-xl font-semibold mb-2 text-sub">리뷰 내용</h2>
+                    <textarea
+                      className="w-full px-3 py-2 text-sub border border-bor rounded-lg focus:outline-none focus:border-blue-500 bg-textbg"
+                      rows="4"
+                      placeholder="리뷰 내용을 입력해주세요."
+                      value={content}
+                      onChange={handleContentChange}
+                    ></textarea>
+                  </div>
+                  <button
+                    className="bg-button2 hover:bg-button2Hov text-white font-semibold py-2 px-4 rounded-lg focus:outline-none"
+                    onClick={handleSubmit}
+                  >
+                    등록
+                  </button>
+                </div>
+              );
+            } else if (!isProvider) {
+              return (
+                <div className="bg-main shadow-md rounded-lg p-6 border border-bor w-full">
+                  <div className="mb-4">
+                    <h2 className="text-xl font-semibold mb-2 text-sub">구매 후 리뷰를 남길 수 있습니다</h2>
+                  </div>
+                </div>
+              );
+            }
+          })()}
+        </div>
+        <div className="p-3 my-8 bg-textbg">
+          <h2 className="text-2xl font-bold mb-4 text-sub">리뷰 및 별점</h2>
+          <ul>
+            {reviews.map((review) => (
+              <li key={review.id} className="mb-4 rounded border border-gray-500">
+                <div className="flex items-center mb-2 text-sub">
+                  {[...Array(5)].map((_, index) => (
+                    <span
+                      key={index}
+                      className={`text-2xl ${index < review.rating ? 'text-yellow-500' : 'text-gray-300'}`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                  |
+                  <span className='pl-5'>등록 시간: {review.registTime}</span>
+                </div>
+                <div>
+                  <span className="text-button2"> {review.userID} </span>
+                  <span className="text-listbg"> : {review.content} </span>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
-      {/* 리뷰와 별점 리스트 */}
-      <div className="p-3 my-8 bg-textbg">
-        <h2 className="text-2xl font-bold mb-4 text-sub">리뷰 및 별점</h2>
-        <ul>
-          {reviews.map((review) => (
-            <li key={review.id} className="mb-4 rounded border border-gray-500">
-              <div className="flex items-center mb-2 text-sub">
-                {[...Array(5)].map((_, index) => (
-                  <span
-                    key={index}
-                    className={`text-2xl ${index < review.rating ? 'text-yellow-500' : 'text-gray-300'}`}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-              <div>
-                <span className='text-button2'> {review.userID} </span>
-                <span className='text-listbg'> : {review.content} </span>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>  
     </BasicLayout>
   );
 };

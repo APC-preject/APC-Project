@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons';
 import BasicLayout from '../../layout/BasicLayout';
 import { useAuthStore } from '../../store/AuthStore';
 import { useUserStore } from '../../store/UserStore';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-const { REACT_APP_NGROK_URL } = process.env;
+
 const QuestionPage = () => {
+  const [queryParams] = useSearchParams();
   const { user } = useAuthStore();
   const { id, replaceId } = useUserStore();
   const navigate = useNavigate();
@@ -15,6 +16,26 @@ const QuestionPage = () => {
   const [questionType, setQuestionType] = useState('');
   const [content, setContent] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [productName, setproductName] = useState('');
+  const [providerName, setproviderName] = useState('');
+  const productId = queryParams.get('product');
+
+  // 제품 정보 조회 함수
+  async function getProductInfo(productId) {
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Network response error!');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching product: ', error);
+      return null;
+    }
+  }
 
   const handleTitleChange = (e) => {
     setTitle(e.target.value);
@@ -30,10 +51,10 @@ const QuestionPage = () => {
       alert('제목을 입력해 주세요.');
       return;
     } else if (questionType === '') {
-      alert('문의 유형을 선택해 주세요');
+      alert('문의 유형을 선택해 주세요.');
       return;
     } else if (content === '') {
-      alert('문의 내용을 입력해 주세요');
+      alert('문의 내용을 입력해 주세요.');
       return;
     }
     try {
@@ -43,15 +64,21 @@ const QuestionPage = () => {
         title,
         questionType,
         content,
-        questionDate
+        questionDate,
+        productId,
+        productName,
+        providerName
       };
-      await axios.post(REACT_APP_NGROK_URL + '/questions', { userId: id, questionData }, {
+      await axios.post('/api/questions', {
+        userId: id,
+        questionData,
+      }, {
         withCredentials: true,
       });
       alert('문의가 등록되었습니다.');
       navigate('/customer/question/list');
     } catch (error) {
-      alert('문의를 등록하는데 에러가 발생했습니다' + error.message);
+      alert('문의를 등록하는데 에러가 발생했습니다:' + error.message);
       navigate('/customer/question/list');
     }
   };
@@ -59,6 +86,23 @@ const QuestionPage = () => {
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
+
+  useEffect(() => {
+    const fetchProductData = async () => {
+      if (!productId) return;
+      try {
+        const data = await getProductInfo(productId);
+        if (!data)
+          throw new Error();
+        setproductName(data.pName);
+        setproviderName(data.providerName);
+      } catch (error) {
+        alert('유효하지 않은 상품ID: ' + error.message);
+        navigate(-1);
+      }
+    }
+    fetchProductData();
+  }, [productId]);
 
   if (!user || id == null) {
     return (
@@ -72,6 +116,9 @@ const QuestionPage = () => {
     <BasicLayout>
       <div className="container mx-auto px-4 py-20">
         <h1 className="text-2xl font-bold mb-6 border-b text-sub">고객 문의</h1>
+        <div className="text-sub font-bold mb-1">
+          제품 ID: {productId}<br></br>제품명: {productName}<br></br>판매자ID: {providerName}
+        </div>
         <div className="w-full">
           <form onSubmit={handleSubmit} className="bg-main border border-bor shadow-md rounded px-10 pt-8 pb-10 mb-6">
             <div className="mb-6">

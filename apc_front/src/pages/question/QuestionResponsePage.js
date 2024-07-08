@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BasicLayout from '../../layout/BasicLayout';
 import axios from 'axios';
-const { REACT_APP_NGROK_URL } = process.env;
+
 const QuestionResponsePage = () => {
   const navigate = useNavigate();
   const [queryParams] = useSearchParams();
@@ -13,12 +13,12 @@ const QuestionResponsePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(REACT_APP_NGROK_URL + `/questions/${questionId}`, {
+        const response = await axios.get(`/api/questions/${questionId}`, {
           withCredentials: true,
         });
         setQuestion(response.data);
       } catch (error) {
-        alert('문의 데이터를 가져오는 중 문제가 발생했습니다.' + error.message);
+        console.error('문의 데이터를 가져오는 중 문제가 발생했습니다: ' + error.message);
       }
     };
 
@@ -31,13 +31,17 @@ const QuestionResponsePage = () => {
 
   const handleSubmitResponse = async () => {
     try {
-      await axios.post(REACT_APP_NGROK_URL + `/questions/${questionId}/response`, { response }, {
+      await axios.post(`/api/questions/response/${questionId}`, {
+        response,
+        userId: question.userID.replace('.', '_')
+      }, {
         withCredentials: true,
       });
       alert('답변이 성공적으로 제출되었습니다.');
       setResponse('');
+      navigate('/customer/question/list');
     } catch (error) {
-      alert('답변을 제출하는 중 문제가 발생했습니다.' + error.message);
+      alert('답변을 제출하는 중 문제가 발생했습니다: ' + error.message);
     }
   };
 
@@ -65,6 +69,7 @@ const QuestionResponsePage = () => {
           <div className="mb-6">
             <textarea
               className="w-full p-2 border border-bor rounded-lg bg-textbgHov"
+              style={{ color: 'white' }}
               rows="5"
               placeholder="답변을 입력하세요..."
               value={response}
