@@ -7,10 +7,6 @@ import {useUserStore} from './store/UserStore';
 import './App.css';
 import root from "./router/root"
 
-const {
-  REACT_APP_NGROK_URL
-} = process.env;
-
 function App() {
   const { isLoading, setUserState } = useAuthStore();
   const { setUserData } = useUserStore();

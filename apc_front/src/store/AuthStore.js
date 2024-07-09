@@ -3,10 +3,6 @@ import { create } from 'zustand';
 // import { onAuthStateChanged, signOut } from 'firebase/auth';
 // import { auth } from '../firebase/FirebaseInstance';
 
-const {
-  REACT_APP_NGROK_URL
-} = process.env;
-
 const useAuthStore = create((set) => ({
   user: null,
   isLoading: true,
