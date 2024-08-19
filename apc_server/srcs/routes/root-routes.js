@@ -16,26 +16,19 @@ const {
 } = process.env; // 환경변수 가져오기
 
 // Import routers
-const authRouter = require('./authRouter');
-const ordersRouter = require('./ordersRouter');
-const productRouter = require('./productRouter');
-const questionsRouter = require('./questionsRouter');
-const reviewRouter = require('./reviewRouter');
-const userRouter = require('./userRouter');
+const storeRouter = require('./storeRouter');
+const stockRouter = require('./stockRouter');
+const releaseRouter = require('./releaseRouter');
+const logisticsRouter = require('./logisticsRouter');
 
 const router = express.Router();
 
-router.use('/auth', authRouter.router);
+router.use('/store', storeRouter.router);
+router.use('/stock', stockRouter.router);
+router.use('/release', releaseRouter.router);
+router.use('/release', releaseRouter.router);
+router.use('/logistics', logisticsRouter.router);
 
-router.use('/orders', ordersRouter.router);
-
-router.use('/user', userRouter.router);
-
-router.use('/questions', questionsRouter.router);
-
-router.use('/review', reviewRouter.router);
-
-router.use('/products', productRouter.router);
 
 router.get('/config/firebase', async (req, res) => {
     res.status(200).json({

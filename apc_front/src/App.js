@@ -1,7 +1,5 @@
 import {Router, RouterProvider} from "react-router-dom";
 import React, { useEffect } from 'react';
-// import { onAuthStateChanged } from 'firebase/auth';
-// import { auth } from './firebase/FirebaseInstance';
 import {useAuthStore} from './store/AuthStore';
 import {useUserStore} from './store/UserStore';
 import './App.css';
@@ -12,36 +10,7 @@ function App() {
   const { setUserData } = useUserStore();
 
   useEffect(() => {
-    // const unsubscribe = onAuthStateChanged(auth, (user) => {
-    //   setUserState({ user, isLoading: false });
-
-    //   if(!user){
-    //     setUserData({ id: null, role: null, replacedId : null });
-    //   }
-    // });
-    // return () => unsubscribe();
-    const checkAuth = async () => {
-        try {
-            const response = await fetch('/api/auth/refreshed', { 
-              credentials: 'include',
-            });
-            if (!response.ok) {
-              setUserData({ id: null, role: null });
-              setUserState(null, false);
-            } else {
-              const data = await response.json();
-              const user = { id: data.userId, role: data.loggedInUserRole };
-              setUserData(user);
-              setUserState(user, false);
-            }
-        } catch (error) {
-            console.error('Not authenticated', error);
-            setUserData({ id: null, role: null });
-            setUserState(null, false);
-        }
-    };
-
-    checkAuth();
+    setUserState(null, false);
   }, []);
   
   if (isLoading) return(

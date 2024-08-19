@@ -2,6 +2,7 @@ unity-apc-firebase-adminsdk.json
 FirebaseInstance.js
 secrets/
 APC_GARAGE_fi/
+nohup.out
 # Logs
 logs
 *.log
@@ -131,4 +132,5 @@ dist
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
+.pnp
 .pnp.*

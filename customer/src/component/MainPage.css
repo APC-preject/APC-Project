@@ -1,0 +1,82 @@
+@import '../index.css';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  text-align: center;
+  height: 100vh;
+}
+
+.protected-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  background-color: #f8f9fa;
+}
+
+.title {
+  font-size: 36px;
+  margin-bottom: 30px;
+  color: #343a40;
+  text-align: center;
+  margin-top: 100px;
+}
+
+.customer-info {
+  font-size: 24px;
+  margin-bottom: 40px;
+  color: #555;
+  text-align: center;
+  color: #6c66cc;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  justify-content: center;
+  gap: 20px;
+}
+
+button {
+  padding: 50px 100px;
+  margin: 10px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 24px;
+  cursor: pointer;
+  width: 200px;
+  transition: background-color 0.3s;
+}
+
+.btn-reservation {
+  background-color: #f88663;
+}
+
+.btn-reservation:hover {
+  background-color: #e5534b;
+}
+
+.btn-list {
+  background-color: #2cc240;
+}
+
+.btn-list:hover {
+  background-color: #218838;
+}
+
+.btn-logout {
+  background-color: #dc3545;
+}
+
+.btn-logout:hover {
+  background-color: #c82333;
+}

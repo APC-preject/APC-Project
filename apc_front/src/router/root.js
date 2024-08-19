@@ -1,163 +1,79 @@
 import { Suspense, lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
-import ColdStoragePage from "../pages/store/ColdStoragePage";
 
 const Loading = () => <div className="text-xl bg-sub">Loading..</div>
 
-// admin
-const AdminManagementPage = lazy(() => import("../pages/AdminManagementPage"))
-
 // main
-const Main = lazy(() => import("../pages/MainPage"))
-
-// user
-const Login = lazy(() => import("../pages/user/LoginPage"))
-const MyPage = lazy(() => import("../pages/user/MyPage"))
-const RegisterPage = lazy(() => import("../pages/user/RegisterPage"))
-
-// order
-const ProductListPage = lazy(() => import("../pages/order/ProductListPage"))
-const OrderedListPage = lazy(() => import("../pages/order/OrderedListPage"))
-const ProductRegisterPage = lazy(() => import("../pages/order/ProductRegisterPage"))
-const OrderManagementPage = lazy(() => import("../pages/order/OrderManagementPage"))
-const ProductDetailPage = lazy(() => import("../pages/order/ProductDetailPage"))
-const OrderManagementDetailPage = lazy(() => import("../pages/order/OrderManagementDetailPage"))
-const ProductBuyPage = lazy(() => import("../pages/order/ProductBuyPage"))
-
-// delivery
-const DeliveryListPage = lazy(() => import("../pages/delivery/DeliveryListPage"))
-
-// review
-const ReviewableListPage = lazy(() => import("../pages/review/ReviewableListPage"))
-const ReviewRegisterPage = lazy(() => import("../pages/review/ReviewRegisterPage"))
-
-// question
-const QuestionPage = lazy(() => import("../pages/question/QuestionPage"))
-const QuestionListPage = lazy(() => import("../pages/question/QuestionListPage"))
-const QuestionDetailPage = lazy(() => import("../pages/question/QuestionDetailPage"))
-const QuestionResponsePage = lazy(() => import("../pages/question/QuestionResponsePage"))
-const MyQuestionListPage = lazy(() => import("../pages/question/MyQuestionListPage"))
+const Main = lazy(() => import("../managerPage/MainPage"))
 
 // else
-const InfoPage = lazy(() => import("../pages/else/InfoPage"))
+const InfoPage = lazy(() => import("../managerPage/else/InfoPage"))
+
+const AnalysisStockPage = lazy(() => import("../managerPage/analysisStock"))
+const RegistReleasePage = lazy(() => import("../managerPage/registRelease"))
+const RegistStorePage = lazy(() => import("../managerPage/registStore"))
+const ReleaseDataPage = lazy(() => import("../managerPage/releaseData"))
+const ReserveReleasePage = lazy(() => import("../managerPage/reserveRelease"))
+const StoreDataPage = lazy(() => import("../managerPage/storeData"))
+const LogisticsData = lazy(() => import("../managerPage/logisticsData"))
+const LogisticsMap = lazy(() => import("../managerPage/logisticsMap"))
+
 
 const root = createBrowserRouter(
 
-    [
-        // 메인페이지
-        {
-            path: "/",
-            element: <Suspense fallback={Loading}><Main /></Suspense>
-        },
+  [
+    {
+      path: "/analysisStock",
+      element: <Suspense fallback={Loading}><AnalysisStockPage /></Suspense>
+    },
 
+    {
+      path: "/registRelease",
+      element: <Suspense fallback={Loading}><RegistReleasePage /></Suspense>
+    },
+    
+    {
+      path: "/registStore",
+      element: <Suspense fallback={Loading}><RegistStorePage /></Suspense>
+    },
 
-        // admin페이지
-        {
-            path: "/admin/management",
-            element: <Suspense fallback={Loading}><AdminManagementPage /></Suspense>
-        },
+    {
+      path: "/releaseData",
+      element: <Suspense fallback={Loading}><ReleaseDataPage /></Suspense>
+    },
 
+    {
+      path: "/reserveRelease",
+      element: <Suspense fallback={Loading}><ReserveReleasePage /></Suspense>
+    },
 
-        // 계정 관련 페이지
-        {
-            path: "/user/login",
-            element: <Suspense fallback={Loading}><Login /></Suspense>
-        },
-        {
-            path: "/user/my",
-            element: <Suspense fallback={Loading}><MyPage /></Suspense>
-        },
-        {
-            path: "/user/register",
-            element: <Suspense fallback={Loading}><RegisterPage /></Suspense>
-        },
+    {
+      path: "/storeData",
+      element: <Suspense fallback={Loading}><StoreDataPage /></Suspense>
+    },
 
+    {
+      path: "/logisticsData",
+      element: <Suspense fallback={Loading}><LogisticsData /></Suspense>
+    },
 
-        // 입고 관련 페이지 (저장고)
-        {
-            path: "/store/coldStorage",
-            element: <Suspense fallback={Loading}><ColdStoragePage /></Suspense>
-        },
+    {
+      path: "/logisticsMap",
+      element: <Suspense fallback={Loading}><LogisticsMap /></Suspense>
+    },
 
+    // 메인페이지
+    {
+      path: "/",
+      element: <Suspense fallback={Loading}><Main /></Suspense>
+    },
 
-        // 주문 관련 페이지
-        {
-            path: "/product/list",
-            element: <Suspense fallback={Loading}><ProductListPage /></Suspense>
-        },
-        {
-            path: "/product/detail",
-            element: <Suspense fallback={Loading}><ProductDetailPage /></Suspense>
-        },
-        {
-            path: "/product/orderedList",
-            element: <Suspense fallback={Loading}><OrderedListPage /></Suspense>
-        },
-        {
-            path: "/product/register",
-            element: <Suspense fallback={Loading}><ProductRegisterPage /></Suspense>
-        },
-        {
-            path: "/product/order/management",
-            element: <Suspense fallback={Loading}><OrderManagementPage /></Suspense>
-        },
-        {
-            path: "/product/order/management/detail",
-            element: <Suspense fallback={Loading}><OrderManagementDetailPage /></Suspense>
-        },
-        {
-            path: "/product/buy",
-            element: <Suspense fallback={Loading}><ProductBuyPage /></Suspense>
-        },
-
-
-        // 배송 관련 페이지
-        {
-            path: "/delivery/list",
-            element: <Suspense fallback={Loading}><DeliveryListPage /></Suspense>
-        },
-
-
-        // 리뷰 관련 페이지
-        {
-            path: "/review/ableList",
-            element: <Suspense fallback={Loading}><ReviewableListPage /></Suspense>
-        },
-        {
-            path: "/review/register",
-            element: <Suspense fallback={Loading}><ReviewRegisterPage /></Suspense>
-        },
-
-
-        // 고객 문의 관련 페이지
-        {
-            path: "/customer/question",
-            element: <Suspense fallback={Loading}><QuestionPage /></Suspense>
-        },
-        {
-            path: "/customer/question/list",
-            element: <Suspense fallback={Loading}><QuestionListPage /></Suspense>
-        },
-        {
-            path: "/customer/question/my/list",
-            element: <Suspense fallback={Loading}><MyQuestionListPage /></Suspense>
-        },
-        {
-            path: "/customer/question/detail",
-            element: <Suspense fallback={Loading}><QuestionDetailPage /></Suspense>
-        },
-        {
-            path: "/customer/question/response",
-            element: <Suspense fallback={Loading}><QuestionResponsePage /></Suspense>
-        },
-
-        // 기타정보페이지
-        {
-            path: "/else/info",
-            element: <Suspense fallback={Loading}><InfoPage /></Suspense>
-        },
-
-    ]
+    // 기타 정보 페이지
+    {
+      path: "/else/info",
+      element: <Suspense fallback={Loading}><InfoPage /></Suspense>
+    },
+  ]
 )
 
 export default root;

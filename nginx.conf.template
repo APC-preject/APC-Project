@@ -30,18 +30,48 @@ http {
     #keepalive_timeout  0;
     keepalive_timeout  65;
 
+    add_header Cache-Control no-store;
+    add_header Pragma no-cache;
+    expires -1;
+
     #gzip  on;
     server {
         listen       ${NGINX_PORT};
         server_name  ${NGROK_URL};
 
-        location ~ ^/(api) {
+        location ^~ /api {
            proxy_pass              http://localhost:${PORT};
            proxy_set_header        Host $host;
            proxy_set_header        X-Real-IP $remote_addr;
            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
            proxy_set_header        X-Forwarded-Proto $scheme;
         }
+
+        location ^~ /token {
+           proxy_pass              http://localhost:${TOKEN_PORT};
+           proxy_set_header        Host $host;
+           proxy_set_header        X-Real-IP $remote_addr;
+           proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header        X-Forwarded-Proto $scheme;
+         }
+
+        location ^~ /producer {
+           proxy_redirect          http://localhost:${PRODUCER_PORT}/  /producer;
+           proxy_set_header        Host $host;
+           proxy_set_header        X-Real-IP $remote_addr;
+           proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header        X-Forwarded-Proto $scheme;
+           proxy_pass              http://localhost:${PRODUCER_PORT};
+         }
+
+         location ^~ /customer {
+           proxy_redirect          http://localhost:${CUSTOMER_PORT}/  /customer;
+           proxy_set_header        Host $host;
+           proxy_set_header        X-Real-IP $remote_addr;
+           proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header        X-Forwarded-Proto $scheme;
+           proxy_pass              http://localhost:${CUSTOMER_PORT};
+         }
 
         location / {
            proxy_pass              http://localhost:${FRONT_PORT};

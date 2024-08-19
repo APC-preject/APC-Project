@@ -1,0 +1,76 @@
+body,
+html,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2em;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 2em auto;
+  width: 1200px;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.fruit-info {
+  background: #f9f9f9;
+  padding: 1em;
+  margin: 1em 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  /* 세로 방향으로 정렬 */
+}
+
+.quality-result {
+  margin-top: 1em;
+}
+
+h1 {
+  margin-bottom: 1em;
+}
+
+h2 {
+  margin-top: 1em;
+}
+
+p {
+  margin: 0.5em 0;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1em;
+}
+
+.pagination button {
+  padding: 0.5em 1em;
+  margin: 0 0.5em;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  margin: 0 1em;
+  font-weight: bold;
+}

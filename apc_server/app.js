@@ -14,6 +14,11 @@ const {
     NGROK_URL,
 } = process.env; // 환경변수 가져오기
 
+if (NGROK_URL === undefined) { // NGROK_URL이 정의되지 않았을 때
+    console.error('NGROK_URL is not defined');
+    process.exit(1);
+}
+
 const app = express(); // express 서버 생성
 
 const corsOptions = {

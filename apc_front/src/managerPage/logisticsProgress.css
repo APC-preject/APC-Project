@@ -1,0 +1,59 @@
+.progress-bar {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  position: relative;
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+  /* Default background color */
+  margin-bottom: 5px;
+  z-index: 1;
+}
+
+.icon-container.active {
+  background-color: green;
+  /* Active background color */
+}
+
+.stage .icon {
+  font-size: 24px;
+  z-index: 1;
+}
+
+.stage .name {
+  font-size: 14px;
+}
+
+.line {
+  position: absolute;
+  top: 32%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #ccc;
+  z-index: 0;
+}
+
+.stage.active~.line {
+  background-color: green;
+}
+
+/* 트럭 아이콘을 회전시키는 CSS */
+.icon.rotate {
+  transform: scaleX(-1);
+}
