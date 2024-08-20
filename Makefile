@@ -1,7 +1,7 @@
 #!/bin/bash
 SHELL := /bin/bash
 
-include ./apc_server/secrets/.env
+include ./apc_server/.env
 
 KILL=kill -9
 KILLALL=killall -9

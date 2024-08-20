@@ -1,7 +1,5 @@
 // 로그인 상태 관리
 import { create } from 'zustand';
-// import { onAuthStateChanged, signOut } from 'firebase/auth';
-// import { auth } from '../firebase/FirebaseInstance';
 
 const useAuthStore = create((set) => ({
   user: null,

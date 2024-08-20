@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const rootRouter = require('./srcs/routes/root-routes');
 const dotenv = require('dotenv');
 
-dotenv.config({ path: './secrets/.env' }); // .env 파일에서 환경변수 로드
+dotenv.config({ path: './.env' }); // .env 파일에서 환경변수 로드
 
 const {
     // server config
