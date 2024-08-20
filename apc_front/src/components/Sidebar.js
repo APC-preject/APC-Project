@@ -2,15 +2,10 @@ import React, { useState } from 'react';
 import StoreDropdown from './sideBarDropdownMenu/StoreDropdown';
 import StockDropdown from './sideBarDropdownMenu/StockDropdown';
 import InfoDropdown from './sideBarDropdownMenu/InfoDropdown';
-import { useAuthStore } from "../store/AuthStore"
-import { useUserStore } from "../store/UserStore";
 import RealeaseDropdown from './sideBarDropdownMenu/ReleaseDropdown';
 import LogisticsDropdown from './sideBarDropdownMenu/LogisticsDropdown';
 
 export default function Sidebar() {
-
-  const { user } = useAuthStore();
-  const { id, role } = useUserStore();
 
   return (
     <aside id="separator-sidebar"

@@ -1,16 +1,13 @@
 import {Router, RouterProvider} from "react-router-dom";
-import React, { useEffect } from 'react';
-import {useAuthStore} from './store/AuthStore';
-import {useUserStore} from './store/UserStore';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import root from "./router/root"
 
 function App() {
-  const { isLoading, setUserState } = useAuthStore();
-  const { setUserData } = useUserStore();
+  const [isLoading , setIsLoading] = useState(true);
 
   useEffect(() => {
-    setUserState(null, false);
+    setIsLoading(false);
   }, []);
   
   if (isLoading) return(
@@ -21,7 +18,6 @@ function App() {
           <div className="w-16 h-16 border-4 border-gray-200 border-t-4 border-t-blue-500 rounded-full animate-spin"></div>
         </div>
       </div>
-      
     </div>
   ) ; // 시작 로딩 화면 넣을 것
 
