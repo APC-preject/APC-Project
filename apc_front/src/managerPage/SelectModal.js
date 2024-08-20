@@ -58,7 +58,7 @@ const SelectModal = ({ onClose, state, id, grade, total, gradeSet, classFunc }) 
               onClick={() => setPhotoView(false)}
               style={{ display: 'inline-block' }}
             >
-              <img className='justify-center' src={selectPhoto} style={{ maxWidth: '80%', height: 'auto' }} />
+              <img className='justify-center' src={selectPhoto} style={{ maxWidth: '300px', height: 'auto' }} />
             </div>
           }
           {state == 0 ? (
