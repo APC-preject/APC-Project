@@ -167,7 +167,7 @@ export default function MainPage() {
       <div className="container mx-auto px-4 py-20">
         <h1 className="text-2xl font-bold mb-6 border-b text-sub">입고 등록</h1>
         <div className="w-full">
-          <form onSubmit={handleMakeStoreForDebug/*handleSubmit*/} className="bg-main border border-bor shadow-md rounded px-10 pt-8 pb-10 mb-6">
+          <form onSubmit={/*handleMakeStoreForDebug*/handleSubmit} className="bg-main border border-bor shadow-md rounded px-10 pt-8 pb-10 mb-6">
             <div className="mb-6">
               <label className="block text-sub font-bold mb-2" htmlFor="category">
                 입고 품목

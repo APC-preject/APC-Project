@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import GridCell from './LocationGridCell';
 import LogisticsProgress from "./logisticsProgress";
 
 const LogisticsDetailModal = ({ onClose, details, id }) => {

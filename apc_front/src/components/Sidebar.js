@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import StoreDropdown from './sideBarDropdownMenu/StoreDropdown';
 import StockDropdown from './sideBarDropdownMenu/StockDropdown';
-import InfoDropdown from './sideBarDropdownMenu/InfoDropdown';
 import RealeaseDropdown from './sideBarDropdownMenu/ReleaseDropdown';
 import LogisticsDropdown from './sideBarDropdownMenu/LogisticsDropdown';
 
