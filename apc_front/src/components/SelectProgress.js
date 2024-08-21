@@ -1,5 +1,5 @@
 import React from 'react';
-import './logisticsProgress.css';
+import '../style/logisticsProgress.css';
 
 const SelectProgress = ({ currentStage }) => {
   const stages = [
