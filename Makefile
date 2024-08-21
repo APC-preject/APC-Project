@@ -15,6 +15,7 @@ all:
 	$(MAKE) build
 
 build:
+	$(MAKE) setEnvironment
 	$(MAKE) nginxUp
 	$(MAKE) frontUp
 	$(MAKE) producerUp
@@ -22,6 +23,32 @@ build:
 	$(MAKE) customerUp
 	$(MAKE) backUp
 	@echo "All services are up"
+
+setEnvironment:
+	export PORT=$(PORT) \
+	&& export FRONT_PORT=$(FRONT_PORT) \
+	&& export NGINX_PORT=$(NGINX_PORT) \
+	&& export TOKEN_PORT=$(TOKEN_PORT) \
+	&& export CUSTOMER_PORT=$(CUSTOMER_PORT) \
+	&& export PRODUCER_PORT=$(PRODUCER_PORT) \
+	&& export API_KEY=$(API_KEY) \
+	&& export AUTH_DOMAIN=$(AUTH_DOMAIN) \
+	&& export DATABASE_URL=$(DATABASE_URL) \
+	&& export PROJECT_ID=$(PROJECT_ID) \
+	&& export STORAGE_BUCKET=$(STORAGE_BUCKET) \
+	&& export MESSAGING_SENDER_ID=$(MESSAGING_SENDER_ID) \
+	&& export APP_ID=$(APP_ID) \
+	&& export MEASUREMENT_ID=$(MEASUREMENT_ID) \
+	&& export TOKEN_SECRET_KEY=$(TOKEN_SECRET_KEY) \
+	&& sudo -E envsubst '$${FRONT_PORT}' \
+	 < ./apc_front/.env.template > ./apc_front/.env \
+	&& sudo -E envsubst '$${PRODUCER_PORT} $${API_KEY} $${AUTH_DOMAIN} $${DATABASE_URL} $${PROJECT_ID} $${STORAGE_BUCKET} $${MESSAGING_SENDER_ID} $${APP_ID} $${MEASUREMENT_ID}' \
+	 < ./producer/.env.template > ./producer/.env \
+	&& sudo -E envsubst '$${CUSTOMER_PORT} $${API_KEY} $${AUTH_DOMAIN} $${DATABASE_URL} $${PROJECT_ID} $${STORAGE_BUCKET} $${MESSAGING_SENDER_ID} $${APP_ID} $${MEASUREMENT_ID}' \
+	 < ./customer/.env.template > ./customer/.env \
+	&& sudo -E envsubst '$${TOKEN_PORT} $${TOKEN_SECRET_KEY}' \
+	 < ./token-server/.env.template > ./token-server/.env
+	@echo "set Environment complete"
 
 nginxUp:
 	export NGROK_URL=$(NGROK_URL) \
