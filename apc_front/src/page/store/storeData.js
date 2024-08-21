@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import BasicLayout from '../layout/BasicLayout';
+import BasicLayout from '../../layout/BasicLayout';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import SelectModal from './SelectModal';
+import SelectModal from '../../modal/SelectModal';
 
 export default function MainPage() {
   const fruitCategory = ['토마토', '사과', '파프리카', '포도', '참다래', '딸기'];

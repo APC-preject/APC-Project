@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import SelectProgress from './SelectProgress';
+import SelectProgress from '../components/SelectProgress';
 
 const SelectModal = ({ onClose, state, id, grade, total, gradeSet, classFunc }) => {
   const modalRef = useRef(null);

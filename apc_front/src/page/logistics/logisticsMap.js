@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import BasicLayout from '../layout/BasicLayout';
+import BasicLayout from '../../layout/BasicLayout';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import LogisticsDetailModal from './LogisticsDetailModal';
+import LogisticsDetailModal from '../../modal/LogisticsDetailModal';
 
 
 export default function MainPage() {

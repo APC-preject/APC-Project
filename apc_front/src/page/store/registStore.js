@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import BasicLayout from '../layout/BasicLayout';
-import LocationModal from './LocationModal';
+import BasicLayout from '../../layout/BasicLayout';
+import LocationModal from '../../modal/LocationModal';
 import { useSearchParams, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 

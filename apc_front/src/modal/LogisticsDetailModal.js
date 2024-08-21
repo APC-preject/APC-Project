@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import LogisticsProgress from "./logisticsProgress";
+import LogisticsProgress from "../components/logisticsProgress";
 
 const LogisticsDetailModal = ({ onClose, details, id }) => {
   const modalRef = useRef(null);

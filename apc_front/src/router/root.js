@@ -4,19 +4,19 @@ import { createBrowserRouter } from "react-router-dom";
 const Loading = () => <div className="text-xl bg-sub">Loading..</div>
 
 // main
-const Main = lazy(() => import("../managerPage/MainPage"))
+const Main = lazy(() => import("../page/MainPage"))
 
 // else
 const InfoPage = lazy(() => import("../managerPage/else/InfoPage"))
 
-const AnalysisStockPage = lazy(() => import("../managerPage/analysisStock"))
-const RegistReleasePage = lazy(() => import("../managerPage/registRelease"))
-const RegistStorePage = lazy(() => import("../managerPage/registStore"))
-const ReleaseDataPage = lazy(() => import("../managerPage/releaseData"))
-const ReserveReleasePage = lazy(() => import("../managerPage/reserveRelease"))
-const StoreDataPage = lazy(() => import("../managerPage/storeData"))
-const LogisticsData = lazy(() => import("../managerPage/logisticsData"))
-const LogisticsMap = lazy(() => import("../managerPage/logisticsMap"))
+const AnalysisStockPage = lazy(() => import("../page/stock/analysisStock"))
+const RegistReleasePage = lazy(() => import("../page/release/registRelease"))
+const RegistStorePage = lazy(() => import("../page/store/registStore"))
+const ReleaseDataPage = lazy(() => import("../page/release/releaseData"))
+const ReserveReleasePage = lazy(() => import("../page/release/reserveRelease"))
+const StoreDataPage = lazy(() => import("../page/store/storeData"))
+const LogisticsData = lazy(() => import("../page/logistics/logisticsData"))
+const LogisticsMap = lazy(() => import("../page/logistics/logisticsMap"))
 
 
 const root = createBrowserRouter(

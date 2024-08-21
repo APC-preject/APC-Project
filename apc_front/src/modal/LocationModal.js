@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GridCell from './LocationGridCell';
+import GridCell from '../components/LocationGridCell';
 
 const LocationModal = ({ onClose }) => {
     const [clickedCells, setClickedCells] = useState(null);
