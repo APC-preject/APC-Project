@@ -49,8 +49,13 @@ setEnvironment:
 	 < ./customer/.env.template > ./customer/.env \
 	&& sudo -E envsubst '$${TOKEN_PORT} $${TOKEN_SECRET_KEY}' \
 	 < ./token-server/.env.template > ./token-server/.env
+ifeq ($(shell uname), Darwin)
+	@sed -i '' 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/producer"|' ./producer/package.json
+	@sed -i '' 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/customer"|' ./customer/package.json
+else
 	@sed -i 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/producer"|' ./producer/package.json
 	@sed -i 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/customer"|' ./customer/package.json
+endif
 	@echo "set Environment complete"
 
 nginxUp:
