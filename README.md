@@ -1,4 +1,4 @@
-# APC-backend
+# APC Project
 APC management SERVICE
 
 ## Technologies Used
@@ -10,7 +10,7 @@ APC management SERVICE
 + express
 + Firebase
 
-## 설치법
+## Install
 1. 필요 프로그램 설치 (Technologies Used 참고)
 2. Ngrok 세팅 및 Ngrok URL 획득 (Ngrok 홈페이지 참조)
     * 단 별도 도메인 존재 및 호스팅이 가능할 경우 생략 가능
@@ -22,10 +22,10 @@ APC management SERVICE
     sudo make install
     ```
 
-    * 만약 npm 또는 Node 관련 에러 발생 시 Makefile에서 $(NPM) 및 $(NODE) 환경변수를 사용하여 npm과 node의 경로 직접 지정 가능
+    * 만약 npm 또는 Node 관련 에러 발생 시 Makefile에서 \$(NPM) 및 \$(NODE) 환경변수를 사용하여 npm과 node의 경로 직접 지정 가능 (default: npm, node)
     * nginx의 설정 파일 경로 Makefile 내에서 직접 지정 가능 (default: /etc/nginx/nginx.conf)
 
-## 사용법
+## Usage
 *   ```shell
     sudo make
     ```
