@@ -9,8 +9,7 @@ dotenv.config({ path: './.env' }); // .env 파일에서 환경변수 로드
 const {
     // server config
     PORT,
-    HOST,
-    FRONT_ORIGIN_URL,
+    FRONT_PORT,
     NGROK_URL,
 } = process.env; // 환경변수 가져오기
 
@@ -22,7 +21,7 @@ if (NGROK_URL === undefined) { // NGROK_URL이 정의되지 않았을 때
 const app = express(); // express 서버 생성
 
 const corsOptions = {
-    origin: [FRONT_ORIGIN_URL, NGROK_URL], // 클라이언트 도메인
+    origin: [`http://localhost:${FRONT_PORT}`, NGROK_URL], // 클라이언트 도메인
     credentials: true, // 쿠키 전달 허용
 }; // cors 옵션
 
@@ -34,6 +33,6 @@ app.use(cookieParser()); // 쿠키 파싱 미들웨어
 app.use('/api', rootRouter.router); // 루트 라우터 등록
 
 app.listen(PORT, () => { // 서버 실행
-  console.log(`Server is running on http://${HOST}:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
