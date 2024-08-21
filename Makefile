@@ -1,7 +1,7 @@
 #!/bin/bash
 SHELL := /bin/bash
 
-include ./apc_server/.env
+include ./.env
 
 KILL=kill -9
 KILLALL=killall -9
@@ -25,7 +25,8 @@ build:
 	@echo "All services are up"
 
 setEnvironment:
-	export PORT=$(PORT) \
+	@sudo cp ./.env ./apc_server/.env \
+	&& export PORT=$(PORT) \
 	&& export FRONT_PORT=$(FRONT_PORT) \
 	&& export NGINX_PORT=$(NGINX_PORT) \
 	&& export TOKEN_PORT=$(TOKEN_PORT) \
@@ -48,10 +49,12 @@ setEnvironment:
 	 < ./customer/.env.template > ./customer/.env \
 	&& sudo -E envsubst '$${TOKEN_PORT} $${TOKEN_SECRET_KEY}' \
 	 < ./token-server/.env.template > ./token-server/.env
+	@sed -i 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/producer"|' ./producer/package.json
+	@sed -i 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/customer"|' ./customer/package.json
 	@echo "set Environment complete"
 
 nginxUp:
-	export NGROK_URL=$(NGROK_URL) \
+	@export NGROK_URL=$(NGROK_URL) \
 	&& export PORT=$(PORT) \
 	&& export FRONT_PORT=$(FRONT_PORT) \
 	&& export NGINX_PORT=$(NGINX_PORT) \

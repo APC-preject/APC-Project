@@ -21,7 +21,7 @@
     "react-toastify": "^10.0.5",
     "web-vitals": "^2.1.4"
   },
-  "homepage": "https://20df-118-36-223-169.ngrok-free.app/customer",
+  "homepage": "https://pleaseSetUpToMakefile/customer",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
