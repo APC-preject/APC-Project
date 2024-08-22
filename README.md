@@ -15,7 +15,7 @@ APC management SERVICE
 2. Ngrok 세팅 및 Ngrok URL 획득 (Ngrok 홈페이지 참조)
     * 단 별도 도메인 존재 및 호스팅이 가능할 경우 생략 가능
     * 이 경우 .env 파일의 NGROK_URL 파트에 해당 도메인 기재
-3. Firebase 세팅 및 firebase admin configure json file 등을 획득 (firebase console 사용, Firebase 홈페이지 참조)
+3. Firebase 세팅 및 firebase admin configure json file 등을 획득 (firebase console 사용, Firebase 관련 도움말[https://firebase.google.com/docs/admin/setup#initialize_the_sdk_in_non-google_environments] 참조)
 4. .env.example 파일을 참고하여, .env파일 작성. 이 때, 위치는 루트 디렉토리로 함
 5. 
     ```shell
