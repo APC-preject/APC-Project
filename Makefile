@@ -11,18 +11,18 @@ NPM=npm
 NODE=node
 
 all:
-	$(MAKE) clean
-	$(MAKE) build
+	@$(MAKE) clean --no-print-directory
+	@$(MAKE) build --no-print-directory
 
 build:
-	$(MAKE) setEnvironment
-	$(MAKE) nginxUp
-	$(MAKE) frontUp
-	$(MAKE) producerUp
-	$(MAKE) tokenUp
-	$(MAKE) customerUp
-	$(MAKE) backUp
-	@echo "All services are up"
+	@$(MAKE) setEnvironment
+	@$(MAKE) nginxUp
+	@$(MAKE) frontUp
+	@$(MAKE) producerUp
+	@$(MAKE) tokenUp
+	@$(MAKE) customerUp
+	@$(MAKE) backUp
+	@echo -e "\e[32m\nAll services are up\n\e[0m"
 
 setEnvironment:
 	@sudo cp ./.env ./apc_server/.env \
@@ -56,7 +56,7 @@ else
 	@sed -i 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/producer"|' ./producer/package.json
 	@sed -i 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/customer"|' ./customer/package.json
 endif
-	@echo "set Environment complete"
+	@echo -e "\e[34mset Environment complete\e[0m"
 
 nginxUp:
 	@export NGROK_URL=$(NGROK_URL) \
@@ -68,89 +68,97 @@ nginxUp:
 	&& export PRODUCER_PORT=$(PRODUCER_PORT) \
 	&& sudo -E envsubst '$${NGINX_PORT} $${NGROK_URL} $${PORT} $${FRONT_PORT} $${PRODUCER_PORT} $${CUSTOMER_PORT} $${TOKEN_PORT}' < nginx.conf.template > $(NGINX_CONF)
 	@sudo -E nginx -c $(NGINX_CONF)
+	@echo -e "\e[34mON Nginx\e[0m"
 
 frontUp:
-	cd ./apc_front \
+	@cd ./apc_front \
 	&& export REACT_APP_NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
+	@echo -e "\e[34mON APC Front-end\e[0m"
 
 producerUp:
-	cd ./producer \
+	@cd ./producer \
 	&& export REACT_APP_NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
+	@echo -e "\e[34mON Producer Service\e[0m"
 
 customerUp:
-	cd ./customer \
+	@cd ./customer \
 	&& export REACT_APP_NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
+	@echo -e "\e[34mON Customer Service\e[0m"
 
 tokenUp:
-	cd ./token-server \
+	@cd ./token-server \
 	&& export REACT_APP_NGROK_URL=$(NGROK_URL) && nohup $(NODE) server.js &
+	@echo -e "\e[34mON Token server\e[0m"
 
 backUp:
-	cd ./apc_server \
+	@cd ./apc_server \
 	&& export NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
+	@echo -e "\e[34mON APC Backend API server\e[0m"
 
 install:
-	cd ./apc_front && $(NPM) install
-	cd ./apc_server && $(NPM) install
-	cd ./producer && $(NPM) install
-	cd ./customer && $(NPM) install
-	cd ./token-server && $(NPM) install
+	@echo -e "install start.."
+	@cd ./apc_front && $(NPM) install
+	@cd ./apc_server && $(NPM) install
+	@cd ./producer && $(NPM) install
+	@cd ./customer && $(NPM) install
+	@cd ./token-server && $(NPM) install
+	@echo -e "All app installed complete"
 
 clean:
-	@echo "Down nginx..."
+	@echo -e "\e[33mKilling nginx...\e[0m"
 	@sudo $(KILLALL) nginx || echo
 
-	@echo "Finding process using port $(PORT)..."
+	@echo -e "Finding process using port $(PORT)..."
 	@PID=$$(sudo lsof -t -i:$(PORT)); \
 	if [ -z "$$PID" ]; then \
-		echo "No backend process"; \
+		echo -e "No backend process"; \
 	else \
-		echo "Killing backend process $$PID using port $(PORT)..."; \
+		echo -e "\e[33mKilling backend process $$PID using port $(PORT)...\e[0m"; \
 		sudo $(KILL) $$PID; \
-		echo "Process $$PID killed."; \
+		echo -e "Process $$PID killed."; \
 	fi
 
-	@echo "Finding process using port $(FRONT_PORT)..."
+	@echo -e "Finding process using port $(FRONT_PORT)..."
 	@PID=$$(sudo lsof -t -i:$(FRONT_PORT)); \
 	if [ -z "$$PID" ]; then \
-		echo "No frontend process"; \
+		echo -e "No frontend process"; \
 	else \
-		echo "Killing frontend process $$PID using port $(FRONT_PORT)..."; \
+		echo -e "\e[33mKilling frontend process $$PID using port $(FRONT_PORT)...\e[0m"; \
 		sudo $(KILL) $$PID; \
-		echo "Process $$PID killed."; \
+		echo -e "Process $$PID killed."; \
 	fi
 
-	@echo "Finding process using port $(PRODUCER_PORT)..."
+	@echo -e "Finding process using port $(PRODUCER_PORT)..."
 	@PID=$$(sudo lsof -t -i:$(PRODUCER_PORT)); \
 	if [ -z "$$PID" ]; then \
-		echo "No frontend process"; \
+		echo -e "No frontend process"; \
 	else \
-		echo "Killing frontend process $$PID using port $(PRODUCER_PORT)..."; \
+		echo -e "\e[33mKilling producer process $$PID using port $(PRODUCER_PORT)...\e[0m"; \
 		sudo $(KILL) $$PID; \
-		echo "Process $$PID killed."; \
+		echo -e "Process $$PID killed."; \
 	fi
 
-	@echo "Finding process using port $(CUSTOMER_PORT)..."
+	@echo -e "Finding process using port $(CUSTOMER_PORT)..."
 	@PID=$$(sudo lsof -t -i:$(CUSTOMER_PORT)); \
 	if [ -z "$$PID" ]; then \
-		echo "No frontend process"; \
+		echo -e "No frontend process"; \
 	else \
-		echo "Killing frontend process $$PID using port $(CUSTOMER_PORT)..."; \
+		echo -e "\e[33mKilling customer process $$PID using port $(CUSTOMER_PORT)...\e[0m"; \
 		sudo $(KILL) $$PID; \
-		echo "Process $$PID killed."; \
+		echo -e "Process $$PID killed."; \
 	fi
 
-	@echo "Finding process using port $(TOKEN_PORT)..."
+	@echo -e "Finding process using port $(TOKEN_PORT)..."
 	@PID=$$(sudo lsof -t -i:$(TOKEN_PORT)); \
 	if [ -z "$$PID" ]; then \
-		echo "No frontend process"; \
+		echo -e "No frontend process"; \
 	else \
-		echo "Killing frontend process $$PID using port $(TOKEN_PORT)..."; \
+		echo -e "\e[33mKilling token server process $$PID using port $(TOKEN_PORT)...\e[0m"; \
 		sudo $(KILL) $$PID; \
-		echo "Process $$PID killed."; \
+		echo -e "Process $$PID killed."; \
 	fi
 
-	@echo "All services are down"
+	@echo -e "\e[31m\nAll services are down\n\e[0m"
 
-.PHONY: all build nginxUp frontUp backUp producerUp customerUp clean install
+.PHONY: all build nginxUp frontUp backUp producerUp customerUp clean install setEnvironment
 
