@@ -22,7 +22,7 @@ build:
 	@$(MAKE) tokenUp
 	@$(MAKE) customerUp
 	@$(MAKE) backUp
-	@echo -e "\e[32m\nAll services are up\n\e[0m"
+	@echo -e "\033[32m\nAll services are up\n\033[0m"
 
 setEnvironment:
 	@sudo cp ./.env ./apc_server/.env \
@@ -56,7 +56,7 @@ else
 	@sed -i 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/producer"|' ./producer/package.json
 	@sed -i 's|"homepage": "[^"]*"|"homepage": "$(NGROK_URL)/customer"|' ./customer/package.json
 endif
-	@echo -e "\e[34mset Environment complete\e[0m"
+	@echo -e "\033[34mset Environment complete\033[0m"
 
 nginxUp:
 	@export NGROK_URL=$(NGROK_URL) \
@@ -68,32 +68,32 @@ nginxUp:
 	&& export PRODUCER_PORT=$(PRODUCER_PORT) \
 	&& sudo -E envsubst '$${NGINX_PORT} $${NGROK_URL} $${PORT} $${FRONT_PORT} $${PRODUCER_PORT} $${CUSTOMER_PORT} $${TOKEN_PORT}' < nginx.conf.template > $(NGINX_CONF)
 	@sudo -E nginx -c $(NGINX_CONF)
-	@echo -e "\e[34mON Nginx\e[0m"
+	@echo -e "\033[34mON Nginx\033[0m"
 
 frontUp:
 	@cd ./apc_front \
 	&& export REACT_APP_NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
-	@echo -e "\e[34mON APC Front-end\e[0m"
+	@echo -e "\033[34mON APC Front-end\033[0m"
 
 producerUp:
 	@cd ./producer \
 	&& export REACT_APP_NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
-	@echo -e "\e[34mON Producer Service\e[0m"
+	@echo -e "\033[34mON Producer Service\033[0m"
 
 customerUp:
 	@cd ./customer \
 	&& export REACT_APP_NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
-	@echo -e "\e[34mON Customer Service\e[0m"
+	@echo -e "\033[34mON Customer Service\033[0m"
 
 tokenUp:
 	@cd ./token-server \
 	&& export REACT_APP_NGROK_URL=$(NGROK_URL) && nohup $(NODE) server.js &
-	@echo -e "\e[34mON Token server\e[0m"
+	@echo -e "\033[34mON Token server\033[0m"
 
 backUp:
 	@cd ./apc_server \
 	&& export NGROK_URL=$(NGROK_URL) && nohup $(NPM) start &
-	@echo -e "\e[34mON APC Backend API server\e[0m"
+	@echo -e "\033[34mON APC Backend API server\033[0m"
 
 install:
 	@echo -e "install start.."
@@ -105,7 +105,7 @@ install:
 	@echo -e "All app installed complete"
 
 clean:
-	@echo -e "\e[33mKilling nginx...\e[0m"
+	@echo -e "\033[33mKilling nginx...\033[0m"
 	@sudo $(KILLALL) nginx || echo
 
 	@echo -e "Finding process using port $(PORT)..."
@@ -113,7 +113,7 @@ clean:
 	if [ -z "$$PID" ]; then \
 		echo -e "No backend process"; \
 	else \
-		echo -e "\e[33mKilling backend process $$PID using port $(PORT)...\e[0m"; \
+		echo -e "\033[33mKilling backend process $$PID using port $(PORT)...\033[0m"; \
 		sudo $(KILL) $$PID; \
 		echo -e "Process $$PID killed."; \
 	fi
@@ -123,7 +123,7 @@ clean:
 	if [ -z "$$PID" ]; then \
 		echo -e "No frontend process"; \
 	else \
-		echo -e "\e[33mKilling frontend process $$PID using port $(FRONT_PORT)...\e[0m"; \
+		echo -e "\033[33mKilling frontend process $$PID using port $(FRONT_PORT)...\033[0m"; \
 		sudo $(KILL) $$PID; \
 		echo -e "Process $$PID killed."; \
 	fi
@@ -133,7 +133,7 @@ clean:
 	if [ -z "$$PID" ]; then \
 		echo -e "No frontend process"; \
 	else \
-		echo -e "\e[33mKilling producer process $$PID using port $(PRODUCER_PORT)...\e[0m"; \
+		echo -e "\033[33mKilling producer process $$PID using port $(PRODUCER_PORT)...\033[0m"; \
 		sudo $(KILL) $$PID; \
 		echo -e "Process $$PID killed."; \
 	fi
@@ -143,7 +143,7 @@ clean:
 	if [ -z "$$PID" ]; then \
 		echo -e "No frontend process"; \
 	else \
-		echo -e "\e[33mKilling customer process $$PID using port $(CUSTOMER_PORT)...\e[0m"; \
+		echo -e "\033[33mKilling customer process $$PID using port $(CUSTOMER_PORT)...\033[0m"; \
 		sudo $(KILL) $$PID; \
 		echo -e "Process $$PID killed."; \
 	fi
@@ -153,12 +153,12 @@ clean:
 	if [ -z "$$PID" ]; then \
 		echo -e "No frontend process"; \
 	else \
-		echo -e "\e[33mKilling token server process $$PID using port $(TOKEN_PORT)...\e[0m"; \
+		echo -e "\033[33mKilling token server process $$PID using port $(TOKEN_PORT)...\033[0m"; \
 		sudo $(KILL) $$PID; \
 		echo -e "Process $$PID killed."; \
 	fi
 
-	@echo -e "\e[31m\nAll services are down\n\e[0m"
+	@echo -e "\033[31m\nAll services are down\n\033[0m"
 
 .PHONY: all build nginxUp frontUp backUp producerUp customerUp clean install setEnvironment
 
