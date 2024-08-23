@@ -2,10 +2,15 @@ const express = require('express');
 const crypto = require('crypto');
 const cors = require('cors');
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({ path: './.env' });
+
+const {
+  // server config
+  PORT
+} = process.env;
 
 const app = express();
-const port = 3001;
+const port = PORT;
 
 app.use(cors());
 app.use(express.json());
