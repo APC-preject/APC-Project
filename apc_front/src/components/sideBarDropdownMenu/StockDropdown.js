@@ -16,7 +16,7 @@ export default function StoreDropdown() {
   return (
     <div>
       <a className={dropdownstyle} onClick={handleClickAnalysis}>
-        <span className="flex-1 ml-10 whitespace-nowrap">재고 현황</span>
+        <span className="flex-1 ml-10 whitespace-nowrap">보관 현황</span>
       </a>
     </div>
   )

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import BasicLayout from '../../layout/BasicLayout';
-import LocationModal from '../../modal/LocationModal';
+import ReleaseLocationModal from '../../modal/ReleaseLocationModal';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 export default function MainPage() {
   const gradeSet = [1, 2, 3, 4, 5, 6, 7];
   const page_loc = useLocation();
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('토마토');
   const [grade, setGrade] = useState({});
   const [quantity, setQuantity] = useState({});
   const [isModalOpen, setModalOpen] = useState(false);
@@ -17,15 +17,19 @@ export default function MainPage() {
     return acc;
   }, {}));
   const [reserved, setReserved] = useState(page_loc.state ? page_loc.state.id : null);
+  const [categoryToggle, setCategoryToggle] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    for (let i of gradeSet) {
-      setGrade({ ...grade, [i]: page_loc.state ? !!page_loc.state[i] : false });
-      setQuantity({ ...quantity, [i]: page_loc.state ? page_loc.state[i] : 0 });
-    }
     const pageLoading = async () => {
-
+      setGrade(gradeSet.reduce((acc, cur) => {
+        acc[cur] = page_loc.state ? !!page_loc.state[cur] : false;
+        return acc;
+      }, {}));
+      setQuantity(gradeSet.reduce((acc, cur) => {
+        acc[cur] = page_loc.state ? page_loc.state[cur] : 0;
+        return acc;
+      }, {}));
     };
     pageLoading();
   }, []);
@@ -131,6 +135,7 @@ export default function MainPage() {
   }
 
   const ProductRank = ['1', '2', '3', '4', '5', '6', '7'];
+  const fruitCategory = ['토마토', '사과', '파프리카', '포도', '참다래', '딸기'];
 
   return (
     <BasicLayout>
@@ -145,14 +150,29 @@ export default function MainPage() {
               <label className="block text-sub font-bold mb-2" htmlFor="category">
                 출고 품목
               </label>
-              <input
-                className="shadow appearance-none bg-textbg border border-bor rounded w-full py-3 px-4 text-sub leading-tight focus:outline-none focus:shadow-outline"
-                id="category"
-                type="text"
-                placeholder="품목을 입력해 주세요"
-                value={category}
-                onChange={handleCategoryChange}
-              />
+              <div className="flex items-center justify-between">
+                <button
+                  className="bg-button2 hover:bg-button2Hov transition-colors duration-300 text-white font-bold py-3 px-5 rounded focus:outline-none focus:shadow-outline w-full"
+                  type="button"
+                  onClick={() => { setCategoryToggle(!categoryToggle) }}
+                >
+                  {category}
+                </button>
+              </div>
+              <ul>
+                {categoryToggle && (fruitCategory.map(e => {
+                  return (<li
+                    className="cursor-pointer bg-button3 hover:bg-button2Hov transition-colors duration-300 text-white font-bold py-3 px-5 rounded focus:outline-none focus:shadow-outline w-full my-1"
+                    onClick={() => {
+                      setCategory(e)
+                      setCategoryToggle(false);
+                    }}>
+                    {`${e}`}
+                  </li>
+                  )
+                }))
+                }
+              </ul>
             </div>
             <div className="mb-6">
               <label className="block text-sub font-bold mb-2" htmlFor="grade">
@@ -209,9 +229,9 @@ export default function MainPage() {
                 type="button"
                 onClick={handleOpenModal}
               >
-                위치 선택
+                출고 원물 지정
               </button>
-              {isModalOpen && <LocationModal onClose={handleCloseModal} />}
+              {isModalOpen && <ReleaseLocationModal onClose={handleCloseModal} quantity={quantity} />}
             </div>
             <div className="flex items-center justify-between">
               <button

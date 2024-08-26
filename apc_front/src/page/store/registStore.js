@@ -210,7 +210,7 @@ export default function MainPage() {
               />
             </div>
             <div className="mb-3 mt-5">
-              <label htmlFor="quantity" className="block text-sub font-bold mb-2" style={{ color: 'white' }}>입고 수량:</label>
+              <label htmlFor="quantity" className="block text-sub font-bold mb-2" style={{ color: 'white' }}>입고 수량 (kg):</label>
               <div className="mb-3 mt-5">
                 <input
                   type="number"
@@ -236,7 +236,7 @@ export default function MainPage() {
         <div className="flex items-center justify-between">
           {!(inputId != '') || !generate ? (
             <button
-              className="bg-button4 hover:bg-button2Hov transition-colors duration-300 text-white font-bold py-3 px-5 rounded focus:outline-none focus:shadow-outline"
+              className="bg-button3 transition-colors duration-300 text-white font-bold py-3 px-5 rounded focus:outline-none focus:shadow-outline"
               type="button"
               onClick={() => { }}
             >
@@ -244,7 +244,7 @@ export default function MainPage() {
             </button>
           ) : (
             <button
-              className={"hover:bg-button2Hov transition-colors duration-300 text-white font-bold py-3 px-5 rounded focus:outline-none focus:shadow-outline " + (dataToggle ? "bg-button2" : "bg-button3")}
+              className={"hover:bg-button2Hov transition-colors duration-300 text-white font-bold py-3 px-5 rounded focus:outline-none focus:shadow-outline " + (dataToggle ? "bg-button" : "bg-button3")}
               type="button"
               onClick={() => { setDataToggle(!dataToggle) }}
             >

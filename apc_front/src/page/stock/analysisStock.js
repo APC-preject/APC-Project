@@ -110,7 +110,7 @@ export default function MainPage() {
     <BasicLayout>
       <div className="container mx-auto px-4 py-20">
         <div className='flex font-bold mb-4 text-sub border-b'>
-          <h1 className="text-2xl font-bold text-sub">재고 현황</h1>
+          <h1 className="text-2xl font-bold text-sub">보관 현황</h1>
           <button
             onClick={() => setExpireSort(!expireSort)}
             type="button"

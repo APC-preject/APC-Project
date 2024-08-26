@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import GridCell from '../components/LocationGridCell';
+import React, { useEffect, useState } from 'react';
+import GridCell from '../components/ReleaseLocationGridCell';
+import ReleaseLocationGridCell from '../components/ReleaseLocationGridCell';
 
-const LocationModal = ({ onClose }) => {
+const ReleaseLocationModal = ({ onClose, quantity }) => {
     const [clickedCells, setClickedCells] = useState(null);
 
     const handleCellClick = (row, col) => {
@@ -16,12 +17,13 @@ const LocationModal = ({ onClose }) => {
         const rowCells = [];
         for (let col = 1; col <= cols; col++) {
             rowCells.push(
-                <GridCell
+                <ReleaseLocationGridCell
                     key={`${row}-${col}`}
                     row={row}
                     col={col}
                     clickCell={clickedCells}
                     invalidCell={false}
+                    quantity={quantity}
                     onClick={handleCellClick}
                 />
             );
@@ -37,12 +39,13 @@ const LocationModal = ({ onClose }) => {
       const rowCells = [];
       for (let col = cols + 1; col <= cols + cols; col++) {
           rowCells.push(
-              <GridCell
+              <ReleaseLocationGridCell
                   key={`${row}-${col}`}
                   row={row}
                   col={col}
                   clickCell={clickedCells}
                   invalidCell={false}
+                  quantity={quantity}
                   onClick={handleCellClick}
               />
           );
@@ -95,4 +98,4 @@ const LocationModal = ({ onClose }) => {
     );
 };
 
-export default LocationModal;
+export default ReleaseLocationModal;
