@@ -50,7 +50,7 @@ export default function MainPage() {
     const intervalId = setInterval(fetchData, 3000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [detailViewIndex]);
 
   async function clickClassification(id) {
     try {
