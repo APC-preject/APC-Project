@@ -2,6 +2,7 @@ unity-apc-firebase-adminsdk.json
 secrets/
 APC_GARAGE_fi/
 nohup.out
+.DS_Store
 # Logs
 logs
 *.log
