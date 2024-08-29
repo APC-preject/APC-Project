@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import BasicLayout from '../layout/BasicLayout';
 import { useNavigate } from 'react-router-dom';
 
 export default function MainPage() {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
 
-      } catch (error) {
-        console.error('Error fetching product list:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const handleNavigation = (path) => {
+    if (path === '/' || path === '/producer' || path === '/customer') {
+      window.location.href = path; // 도메인이 동일하지만 다른 앱으로 리다이렉트
+    } else {
+      navigate(path);
+    }
+  };
 
   return (
     <BasicLayout>
@@ -26,6 +27,36 @@ export default function MainPage() {
           </div>
         </div>
       </div>
+      <div className="absolute top-20 right-5">
+        <button 
+          className="bg-blue-500 text-white px-4 py-2 rounded-md shadow-lg"
+          onClick={handleDropdownToggle}
+        >
+          로그인
+        </button>
+        {isDropdownOpen && (
+          <div className="mt-2 bg-white shadow-lg rounded-md w-48">
+            <button
+              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200"
+              onClick={() => handleNavigation('/')}
+            >
+              관리자 로그인
+            </button>
+            <button
+              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200"
+              onClick={() => handleNavigation('/producer')}
+            >
+              재배자 로그인
+            </button>
+            <button
+              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200"
+              onClick={() => handleNavigation('/customer')}
+            >
+              고객사 로그인
+            </button>
+          </div>
+        )}
+      </div>
     </BasicLayout>
-  )
+  );
 }
