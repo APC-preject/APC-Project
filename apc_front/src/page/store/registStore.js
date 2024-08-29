@@ -244,7 +244,7 @@ export default function MainPage() {
             </button>
           ) : (
             <button
-              className={"hover:bg-button2Hov transition-colors duration-300 text-white font-bold py-3 px-5 rounded focus:outline-none focus:shadow-outline " + (dataToggle ? "bg-button" : "bg-button3")}
+              className={"hover:bg-button2Hov transition-colors duration-300 text-white font-bold py-3 px-5 rounded focus:outline-none focus:shadow-outline " + (dataToggle ? "bg-button" : "bg-button2")}
               type="button"
               onClick={() => { setDataToggle(!dataToggle) }}
             >
